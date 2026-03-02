@@ -885,7 +885,6 @@
     margin: 0 48px;
   }
 
-  /* CONTACT SECTION */
   .contact-section {
     max-width: 600px;
     margin: 0 auto;
@@ -900,9 +899,7 @@
     margin-top: 40px;
     text-align: left;
   }
-  .contact-field {
-    margin-bottom: 16px;
-  }
+  .contact-field { margin-bottom: 16px; }
   .contact-label {
     display: block;
     font-size: 12px;
@@ -925,22 +922,19 @@
     box-sizing: border-box;
     font-family: inherit;
   }
+  .contact-input::placeholder { color: var(--muted); }
   .contact-input:focus { border-color: var(--accent); }
-  .contact-textarea {
-    resize: vertical;
-    min-height: 120px;
-  }
+  .contact-textarea { resize: vertical; min-height: 120px; }
   .contact-btn {
     width: 100%;
     background: var(--accent);
-    color: #000;
+    color: #000 !important;
     border: none;
     border-radius: 10px;
     padding: 14px;
     font-size: 14px;
     font-weight: 800;
     cursor: pointer;
-    letter-spacing: 0.5px;
     transition: opacity 0.2s;
     margin-top: 8px;
   }
@@ -952,7 +946,7 @@
     border: 1px solid rgba(0,255,157,0.2);
     border-radius: 10px;
     padding: 16px;
-    color: var(--accent3);
+    color: #00ff9d;
     font-size: 14px;
     text-align: center;
     margin-top: 16px;
@@ -976,7 +970,7 @@
     <li><a href="#how">How it works</a></li>
     <li><a href="#pricing">Pricing</a></li>
   </ul>
-  <a href="/scan" class="nav-cta">Try Free →</a>
+  <a href="hooklens-scanner.html" class="nav-cta">Try Free →</a>
 </nav>
 
 <!-- HERO -->
@@ -995,7 +989,7 @@
   </p>
 
   <div class="hero-actions">
-    <a href="/scan" class="btn-primary">Analyze Your First Ad Free →</a>
+    <a href="hooklens-scanner.html" class="btn-primary">Analyze Your First Ad Free →</a>
     <a href="#how" class="btn-secondary">
       See how it works
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -1165,7 +1159,7 @@
         <li><span class="check">✓</span> Hook + CTA + audio analysis</li>
         <li><span class="check">✓</span> No credit card needed</li>
       </ul>
-      <a href="/scan" class="plan-btn plan-btn-outline">Try Free →</a>
+      <a href="hooklens-scanner.html" class="plan-btn plan-btn-outline">Try Free →</a>
     </div>
     <div class="pricing-card">
       <div class="plan-name">Starter</div>
@@ -1180,7 +1174,7 @@
         <li><span class="check">✓</span> Attention timeline</li>
         <li><span class="check">✓</span> Whisper audio transcript</li>
       </ul>
-      <a href="/scan" class="plan-btn plan-btn-outline">Get Started</a>
+      <a href="hooklens-scanner.html" class="plan-btn plan-btn-outline">Get Started</a>
     </div>
     <div class="pricing-card popular">
       <div class="popular-badge">Most Popular</div>
@@ -1196,7 +1190,7 @@
         <li><span class="check">✓</span> Priority processing</li>
         <li><span class="check">✓</span> Client-ready report export</li>
       </ul>
-      <a href="/scan" class="plan-btn plan-btn-filled">Get Started</a>
+      <a href="hooklens-scanner.html" class="plan-btn plan-btn-filled">Get Started</a>
     </div>
     <div class="pricing-card">
       <div class="plan-name">Agency</div>
@@ -1211,7 +1205,7 @@
         <li><span class="check">✓</span> API access</li>
         <li><span class="check">✓</span> Dedicated support</li>
       </ul>
-      <a href="/scan" class="plan-btn plan-btn-outline">Get Started</a>
+      <a href="hooklens-scanner.html" class="plan-btn plan-btn-outline">Get Started</a>
     </div>
   </div>
   <div class="reveal" style="margin-top: 32px; display: flex; justify-content: center;">
@@ -1237,7 +1231,7 @@
         <div><span class="check">✓</span> Client-ready report export</div>
       </div>
       <div style="margin-top: 20px;">
-        <a href="/scan" class="plan-btn plan-btn-filled" style="width:100%; text-align:center; display:block;">Get Yearly Pro — Save €188 →</a>
+        <a href="hooklens-scanner.html" class="plan-btn plan-btn-filled" style="width:100%; text-align:center; display:block;">Get Yearly Pro — Save €188 →</a>
       </div>
     </div>
   </div>
@@ -1247,12 +1241,11 @@
 <div class="cta-section reveal">
   <h2 class="cta-title">Stop guessing.<br><span>Start knowing.</span></h2>
   <p class="cta-sub">Upload your first ad free. No credit card required.</p>
-  <a href="/scan" class="btn-primary">Analyze Your First Ad Free →</a>
+  <a href="hooklens-scanner.html" class="btn-primary">Analyze Your First Ad Free →</a>
 </div>
 
 <!-- FOOTER -->
 
-<!-- CONTACT -->
 <div class="contact-section reveal" id="contact">
   <div class="section-label">Contact</div>
   <h2 class="section-title" style="font-size:36px;">Got a question?</h2>
@@ -1268,7 +1261,7 @@
     </div>
     <button class="contact-btn" id="contactBtn" onclick="sendContact()">Send Message →</button>
     <div class="contact-success" id="contactSuccess">✓ Message sent! We'll get back to you within 24 hours.</div>
-    <div class="contact-error" id="contactError">Something went wrong. Email us directly at hooklensquestions@gmail.com</div>
+    <div class="contact-error" id="contactError">Something went wrong. Email us at hooklensquestions@gmail.com</div>
   </div>
 </div>
 
@@ -1294,7 +1287,6 @@
   }, { threshold: 0.1 });
   reveals.forEach(el => observer.observe(el));
 
-  // Contact form via Formspree
   async function sendContact() {
     const email = document.getElementById('contactEmail').value.trim();
     const message = document.getElementById('contactMessage').value.trim();
@@ -1302,26 +1294,27 @@
     const success = document.getElementById('contactSuccess');
     const error = document.getElementById('contactError');
 
-    if (!email || !email.includes('@')) { 
+    error.style.display = 'none';
+
+    if (!email || !email.includes('@')) {
       error.textContent = 'Please enter a valid email.';
-      error.style.display = 'block'; 
-      return; 
+      error.style.display = 'block';
+      return;
     }
-    if (!message) { 
+    if (!message) {
       error.textContent = 'Please enter a message.';
-      error.style.display = 'block'; 
-      return; 
+      error.style.display = 'block';
+      return;
     }
 
     btn.disabled = true;
     btn.textContent = 'Sending...';
-    error.style.display = 'none';
 
     try {
       const res = await fetch('https://hooklens-api.onrender.com/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-        body: JSON.stringify({ email, message, _replyto: email })
+        body: JSON.stringify({ email, message })
       });
 
       if (res.ok) {
