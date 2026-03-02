@@ -1,0 +1,1812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HookLens — Analyze Your Ad</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080a0f;
+    --bg2: #0d1018;
+    --surface: #111520;
+    --surface2: #161b28;
+    --border: rgba(255,255,255,0.07);
+    --accent: #00e5ff;
+    --accent2: #7b61ff;
+    --accent3: #00ff9d;
+    --warn: #ffb347;
+    --danger: #ff6b6b;
+    --text: #e8eaf0;
+    --muted: #6b7280;
+    --muted2: #4b5563;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* NAV */
+  nav {
+    padding: 18px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    background: rgba(8,10,15,0.95);
+    backdrop-filter: blur(20px);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo {
+    font-weight: 800;
+    font-size: 18px;
+    color: var(--text);
+    text-decoration: none;
+    letter-spacing: -0.5px;
+  }
+  .logo span { color: var(--accent); text-shadow: 0 0 20px rgba(0,229,255,0.5); }
+
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .api-key-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 14px;
+  }
+
+  .api-key-wrap label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+  }
+
+  .api-key-wrap input {
+    background: none;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-family: monospace;
+    font-size: 12px;
+    width: 220px;
+  }
+
+  .api-key-wrap input::placeholder { color: var(--muted2); }
+
+  /* MAIN LAYOUT */
+  .app {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 48px 24px;
+  }
+
+  /* UPLOAD ZONE */
+  .upload-section {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+
+  .upload-title {
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    color: var(--text);
+    margin-bottom: 10px;
+  }
+
+  .upload-title span {
+    color: var(--accent);
+    text-shadow: 0 0 30px rgba(0,229,255,0.3);
+  }
+
+  .upload-sub {
+    font-size: 15px;
+    color: var(--muted);
+    font-weight: 300;
+    margin-bottom: 36px;
+  }
+
+  .dropzone {
+    border: 2px dashed rgba(0,229,255,0.2);
+    border-radius: 16px;
+    padding: 60px 40px;
+    cursor: pointer;
+    transition: all 0.3s;
+    background: rgba(0,229,255,0.02);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .dropzone:hover, .dropzone.drag-over {
+    border-color: rgba(0,229,255,0.5);
+    background: rgba(0,229,255,0.05);
+  }
+
+  .dropzone-icon {
+    width: 56px; height: 56px;
+    background: rgba(0,229,255,0.08);
+    border: 1px solid rgba(0,229,255,0.2);
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 20px;
+    font-size: 24px;
+  }
+
+  .dropzone h3 {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+
+  .dropzone p {
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 300;
+  }
+
+  .dropzone input[type="file"] {
+    display: none;
+  }
+
+  /* VIDEO PREVIEW */
+  .video-preview-wrap {
+    display: none;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+
+  .video-preview-wrap.show { display: block; }
+
+  .video-info {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .video-thumb {
+    width: 80px; height: 56px;
+    background: #000;
+    border-radius: 8px;
+    overflow: hidden;
+    flex-shrink: 0;
+    position: relative;
+  }
+
+  .video-thumb video {
+    width: 100%; height: 100%;
+    object-fit: cover;
+  }
+
+  .video-meta h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .video-meta p {
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 300;
+  }
+
+  .video-tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+  }
+
+  .vtag {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: rgba(0,229,255,0.08);
+    color: var(--accent);
+    border: 1px solid rgba(0,229,255,0.15);
+  }
+
+  /* CONTEXT INPUTS */
+  .context-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .field label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .field input, .field select, .field textarea {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    color: var(--text);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+    width: 100%;
+  }
+
+  .field input:focus, .field select:focus, .field textarea:focus {
+    border-color: rgba(0,229,255,0.3);
+  }
+
+  .field input::placeholder, .field textarea::placeholder { color: var(--muted2); }
+
+  .field select option { background: var(--surface2); }
+
+  .field textarea { resize: vertical; min-height: 80px; }
+
+  /* ANALYZE BUTTON */
+  .analyze-btn {
+    width: 100%;
+    padding: 18px;
+    background: var(--accent);
+    color: #000;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.25s;
+    box-shadow: 0 0 30px rgba(0,229,255,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .analyze-btn:hover:not(:disabled) {
+    box-shadow: 0 0 50px rgba(0,229,255,0.5);
+    transform: translateY(-1px);
+  }
+
+  .analyze-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  /* PROGRESS */
+  .progress-wrap {
+    display: none;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    margin-top: 24px;
+    text-align: center;
+  }
+
+  .progress-wrap.show { display: block; }
+
+  .progress-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+
+  .progress-sub {
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 300;
+    margin-bottom: 24px;
+  }
+
+  .progress-bar-bg {
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent2), var(--accent), var(--accent3));
+    border-radius: 2px;
+    width: 0%;
+    transition: width 0.5s ease;
+    box-shadow: 0 0 10px rgba(0,229,255,0.5);
+  }
+
+  .progress-steps {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+  }
+
+  .progress-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--muted2);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    transition: color 0.3s;
+  }
+
+  .progress-step.active { color: var(--accent); }
+  .progress-step.done { color: var(--accent3); }
+
+  .step-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--muted2);
+    transition: all 0.3s;
+  }
+
+  .progress-step.active .step-dot {
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
+    animation: pulse 1.5s infinite;
+  }
+
+  .progress-step.done .step-dot {
+    background: var(--accent3);
+    box-shadow: 0 0 8px var(--accent3);
+  }
+
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.4); opacity: 0.6; }
+  }
+
+  /* RESULTS */
+  .results-wrap {
+    display: none;
+    margin-top: 40px;
+  }
+
+  .results-wrap.show { display: block; }
+
+  .results-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 32px;
+  }
+
+  .results-title {
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: -0.8px;
+    color: var(--text);
+  }
+
+  .results-meta {
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 300;
+  }
+
+  .new-scan-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .new-scan-btn:hover { border-color: rgba(0,229,255,0.3); color: var(--text); }
+
+  /* SCRIPT ANALYZER */
+  .script-analyzer { width: 100%; border-collapse: collapse; margin: 16px 0; display: table; }
+  .script-header-row { display: table-row; }
+  .script-header-row .script-col-header { display: table-cell; width: 50%; font-size: 11px; font-weight: 700; color: var(--cyan); text-transform: uppercase; letter-spacing: 1px; padding: 0 14px 10px 14px; }
+  .script-row { display: table-row; }
+  .script-cell { display: table-cell; width: 50%; padding: 10px 14px; vertical-align: top; border-bottom: 1px solid rgba(255,255,255,0.04); }
+  .script-row.good .script-cell:first-child { border-left: 3px solid var(--green); background: rgba(0,255,157,0.03); }
+  .script-row.weak .script-cell:first-child { border-left: 3px solid #ffc800; background: rgba(255,200,0,0.03); }
+  .script-row.bad .script-cell:first-child { border-left: 3px solid #ff5a5a; background: rgba(255,90,90,0.03); }
+  .script-row.weak .script-cell.right, .script-row.bad .script-cell.right { border-left: 3px solid rgba(0,229,255,0.25); background: rgba(0,229,255,0.03); }
+  .script-time { font-size: 10px; color: var(--cyan); margin-bottom: 4px; font-weight: 600; }
+  .script-text { font-size: 13px; color: var(--text); line-height: 1.5; }
+  .script-text.rewrite { color: #00ff9d; font-weight: 500; }
+  .script-issue { font-size: 11px; color: var(--text-dim); margin-top: 5px; font-style: italic; line-height: 1.4; }
+  .script-issue.good-label { color: rgba(0,255,157,0.35); font-style: normal; }
+  .script-keep { font-size: 13px; color: rgba(0,255,157,0.35); padding-top: 18px; }
+  @media (max-width: 700px) { .script-analyzer, .script-header-row, .script-row, .script-cell { display: block !important; width: 100% !important; } }
+
+  /* OVERALL SCORE */
+  .overall-score-card {
+    background: var(--surface);
+    border: 1px solid rgba(0,229,255,0.15);
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 24px;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 32px;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .overall-score-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent2), var(--accent), var(--accent3));
+  }
+
+  .big-score {
+    text-align: center;
+  }
+
+  .big-score-num {
+    font-size: 72px;
+    font-weight: 800;
+    letter-spacing: -4px;
+    line-height: 1;
+    background: linear-gradient(135deg, var(--accent), var(--accent3));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .big-score-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-top: 4px;
+  }
+
+  .score-breakdown {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+  }
+
+  .score-mini {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .score-mini-label {
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .score-mini-val {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    line-height: 1;
+  }
+
+  .score-mini-bar {
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .score-mini-fill {
+    height: 100%;
+    border-radius: 2px;
+  }
+
+  .c-high { color: var(--accent3); }
+  .c-mid { color: var(--accent); }
+  .c-low { color: var(--warn); }
+  .c-danger { color: var(--danger); }
+
+  .f-high { background: var(--accent3); }
+  .f-mid { background: var(--accent); }
+  .f-low { background: var(--warn); }
+  .f-danger { background: var(--danger); }
+
+  /* RESULTS GRID */
+  .results-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+
+  .result-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 26px;
+    transition: border-color 0.3s;
+  }
+
+  .result-card:hover { border-color: rgba(0,229,255,0.15); }
+
+  .result-card.full-width {
+    grid-column: span 2;
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+  }
+
+  .card-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .card-icon {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px;
+    flex-shrink: 0;
+  }
+
+  .icon-cyan { background: rgba(0,229,255,0.1); border: 1px solid rgba(0,229,255,0.2); }
+  .icon-purple { background: rgba(123,97,255,0.1); border: 1px solid rgba(123,97,255,0.2); }
+  .icon-green { background: rgba(0,255,157,0.1); border: 1px solid rgba(0,255,157,0.2); }
+  .icon-warn { background: rgba(255,179,71,0.1); border: 1px solid rgba(255,179,71,0.2); }
+
+  .card-score-badge {
+    font-size: 13px;
+    font-weight: 800;
+    padding: 4px 10px;
+    border-radius: 6px;
+    letter-spacing: -0.3px;
+  }
+
+  .badge-high { background: rgba(0,255,157,0.1); color: var(--accent3); }
+  .badge-mid { background: rgba(0,229,255,0.1); color: var(--accent); }
+  .badge-low { background: rgba(255,179,71,0.1); color: var(--warn); }
+  .badge-danger { background: rgba(255,107,107,0.1); color: var(--danger); }
+
+  .card-body {
+    font-size: 14px;
+    color: var(--muted);
+    font-weight: 300;
+    line-height: 1.7;
+  }
+
+  .fix-item {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-top: 12px;
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.6;
+    font-weight: 400;
+  }
+
+  .fix-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+
+  .geo-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .geo-tag {
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    border: 1px solid;
+  }
+
+  .geo-strong { background: rgba(0,255,157,0.08); color: var(--accent3); border-color: rgba(0,255,157,0.2); }
+  .geo-mid { background: rgba(0,229,255,0.06); color: var(--accent); border-color: rgba(0,229,255,0.15); }
+  .geo-weak { background: rgba(255,107,107,0.06); color: var(--danger); border-color: rgba(255,107,107,0.15); }
+
+  .persona-box {
+    background: var(--bg2);
+    border-radius: 10px;
+    padding: 16px;
+    margin-top: 12px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .persona-item label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted2);
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .persona-item span {
+    font-size: 13px;
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .timeline-items {
+    margin-top: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .timeline-item {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 10px 14px;
+    background: var(--bg2);
+    border-radius: 8px;
+    border-left: 2px solid;
+  }
+
+  .timeline-item.tl-good { border-color: var(--accent3); }
+  .timeline-item.tl-warn { border-color: var(--warn); }
+  .timeline-item.tl-bad { border-color: var(--danger); }
+
+  .tl-time {
+    font-family: monospace;
+    font-size: 12px;
+    color: var(--muted);
+    white-space: nowrap;
+    padding-top: 1px;
+    min-width: 45px;
+  }
+
+  .tl-text {
+    font-size: 13px;
+    color: var(--text);
+    font-weight: 400;
+    line-height: 1.5;
+  }
+
+  /* CANVAS hidden */
+  #extractCanvas { display: none; }
+
+  /* ERROR */
+  .error-banner {
+    display: none;
+    background: rgba(255,107,107,0.08);
+    border: 1px solid rgba(255,107,107,0.2);
+    border-radius: 10px;
+    padding: 16px 20px;
+    color: var(--danger);
+    font-size: 14px;
+    margin-top: 16px;
+  }
+
+  .error-banner.show { display: block; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="hooklens.html" class="logo">Hook<span>Lens</span></a>
+  <div class="nav-right">
+
+  </div>
+</nav>
+
+<canvas id="extractCanvas"></canvas>
+
+<div class="app">
+
+  <!-- UPLOAD -->
+  <div class="upload-section" id="uploadSection">
+    <h1 class="upload-title">Analyze your <span>video ad</span></h1>
+    <p class="upload-sub">Upload any video — TikTok, Meta, YouTube, Instagram. Get your full report in under 60 seconds.</p>
+
+    <div class="dropzone" id="dropzone">
+      <input type="file" id="fileInput" accept="video/*" />
+      <div class="dropzone-icon">🎬</div>
+      <h3>Drop your video ad here</h3>
+      <p>MP4, MOV, AVI supported · Max 200MB</p>
+    </div>
+  </div>
+
+  <!-- VIDEO PREVIEW + CONTEXT -->
+  <div class="video-preview-wrap" id="videoPreviewWrap">
+    <div class="video-info">
+      <div class="video-thumb">
+        <video id="videoThumb" muted></video>
+      </div>
+      <div class="video-meta">
+        <h4 id="videoName">ad_video.mp4</h4>
+        <p id="videoSize">0 MB · 0s</p>
+        <div class="video-tags">
+          <span class="vtag" id="videoRes">–</span>
+          <span class="vtag" id="videoDur">–</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="context-grid">
+      <div class="field">
+        <label>Platform</label>
+        <select id="platform">
+          <option value="TikTok">TikTok</option>
+          <option value="Instagram (Reels/Stories)">Instagram Reels / Stories</option>
+          <option value="Facebook">Facebook</option>
+          <option value="YouTube (Pre-roll)">YouTube Pre-roll</option>
+          <option value="YouTube Shorts">YouTube Shorts</option>
+          <option value="Google Display Ads">Google Display Ads</option>
+          <option value="X (Twitter)">X (Twitter)</option>
+          <option value="LinkedIn">LinkedIn</option>
+          <option value="Snapchat">Snapchat</option>
+          <option value="Pinterest">Pinterest</option>
+          <option value="Reddit">Reddit</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Target Market</label>
+        <select id="targetMarket">
+          <optgroup label="Nordic">
+            <option value="Sweden">Sweden</option>
+            <option value="Norway">Norway</option>
+            <option value="Denmark">Denmark</option>
+            <option value="Finland">Finland</option>
+            <option value="Nordic Countries (SE, NO, DK, FI)">All Nordic Countries</option>
+          </optgroup>
+          <optgroup label="DACH">
+            <option value="Germany">Germany</option>
+            <option value="Austria">Austria</option>
+            <option value="Switzerland">Switzerland</option>
+            <option value="DACH Region">All DACH Region</option>
+          </optgroup>
+          <optgroup label="Western Europe">
+            <option value="United Kingdom">United Kingdom</option>
+            <option value="Netherlands">Netherlands</option>
+            <option value="Belgium">Belgium</option>
+            <option value="France">France</option>
+            <option value="Spain">Spain</option>
+            <option value="Italy">Italy</option>
+            <option value="Portugal">Portugal</option>
+            <option value="Ireland">Ireland</option>
+          </optgroup>
+          <optgroup label="North America">
+            <option value="United States">United States</option>
+            <option value="Canada">Canada</option>
+          </optgroup>
+          <optgroup label="Other">
+            <option value="Australia">Australia</option>
+            <option value="New Zealand">New Zealand</option>
+            <option value="Brazil">Brazil</option>
+            <option value="Global">Global</option>
+          </optgroup>
+        </select>
+      </div>
+      <div class="field">
+        <label>Product / Service</label>
+        <input type="text" id="productDesc" placeholder="e.g. SaaS tool for marketing agencies" />
+      </div>
+      <div class="field">
+        <label>Target Audience</label>
+        <input type="text" id="targetAudience" placeholder="e.g. Fitness enthusiasts, self-improvement" />
+      </div>
+      <div class="field">
+        <label>Target Age Range</label>
+        <input type="text" id="targetAge" placeholder="e.g. 18-35" />
+      </div>
+      <div class="field">
+        <label>Target Gender</label>
+        <select id="targetGender">
+          <option value="All genders">All genders</option>
+          <option value="Primarily male (80%+)">Primarily male (80%+)</option>
+          <option value="Primarily female (80%+)">Primarily female (80%+)</option>
+          <option value="Male skewed (60/40)">Male skewed (60/40)</option>
+          <option value="Female skewed (60/40)">Female skewed (60/40)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Ad Objective</label>
+        <select id="adObjective">
+          <option value="Drive app downloads">Drive app downloads</option>
+          <option value="Generate leads">Generate leads</option>
+          <option value="Direct product sales">Direct product sales</option>
+          <option value="Brand awareness">Brand awareness</option>
+          <option value="Website traffic">Website traffic</option>
+          <option value="Retargeting warm audience">Retargeting warm audience</option>
+          <option value="Subscription sign-ups">Subscription sign-ups</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Ad Angle</label>
+        <select id="adAngle">
+          <option value="Problem → Solution">Problem → Solution</option>
+          <option value="Social proof / Testimonial">Social proof / Testimonial</option>
+          <option value="Curiosity / Pattern interrupt">Curiosity / Pattern interrupt</option>
+          <option value="Fear of missing out (FOMO)">Fear of missing out (FOMO)</option>
+          <option value="Aspirational / Lifestyle">Aspirational / Lifestyle</option>
+          <option value="Educational / How-to">Educational / How-to</option>
+          <option value="Price / Value offer">Price / Value offer</option>
+          <option value="Comparison / Us vs them">Comparison / Us vs them</option>
+          <option value="Humor / Entertainment">Humor / Entertainment</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Main Problem the Ad Solves</label>
+        <input type="text" id="problemSolved" placeholder="e.g. Agencies waste hours analyzing ad performance manually" />
+      </div>
+      <div class="field">
+        <label>Desired Viewer Action (CTA)</label>
+        <input type="text" id="desiredCta" placeholder="e.g. Download the app, Sign up free, Book a demo" />
+      </div>
+      <div class="field" style="grid-column: span 2;">
+        <label>Audio Description</label>
+        <input type="text" id="audioDesc" placeholder="e.g. Male voiceover, motivational tone, hip-hop beat, fast cuts, echo SFX on key words..." />
+      </div>
+      <div class="field" style="grid-column: span 2;">
+        <label>Additional Context (optional)</label>
+        <textarea id="additionalContext" placeholder="Any other info: competitor context, previous ad performance, specific concerns about this ad..."></textarea>
+      </div>
+    </div>
+
+    <button class="analyze-btn" id="analyzeBtn" onclick="startAnalysis()">
+      <span>🔍</span> Analyze This Ad
+    </button>
+
+    <div class="error-banner" id="errorBanner"></div>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="progress-wrap" id="progressWrap">
+    <div class="progress-title" id="progressTitle">Extracting frames...</div>
+    <div class="progress-sub" id="progressSub">Scanning your video second by second</div>
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="progressBar"></div>
+    </div>
+    <div class="progress-steps">
+      <div class="progress-step" id="step1">
+        <div class="step-dot"></div>
+        Frame Extraction
+      </div>
+      <div class="progress-step" id="step2">
+        <div class="step-dot"></div>
+        Audio Analysis
+      </div>
+      <div class="progress-step" id="step3">
+        <div class="step-dot"></div>
+        AI Scanning
+      </div>
+      <div class="progress-step" id="step4">
+        <div class="step-dot"></div>
+        Report Generation
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="results-wrap" id="resultsWrap">
+    <div class="results-header">
+      <div>
+        <div class="results-title">Analysis Report</div>
+        <div class="results-meta" id="resultsMeta"></div>
+      </div>
+      <button class="new-scan-btn" onclick="resetScanner()">+ New Scan</button>
+    </div>
+
+    <!-- OVERALL SCORE -->
+    <div class="overall-score-card" id="overallScoreCard">
+      <div class="big-score">
+        <div class="big-score-num" id="overallScoreNum">–</div>
+        <div class="big-score-label">Overall Score</div>
+      </div>
+      <div class="score-breakdown" id="scoreBreakdown"></div>
+    </div>
+
+    <!-- CARDS GRID -->
+    <div class="results-grid" id="resultsGrid"></div>
+
+  </div>
+</div>
+
+<script>
+const dropzone = document.getElementById('dropzone');
+const fileInput = document.getElementById('fileInput');
+let videoFile = null;
+let videoElement = null;
+
+// DRAG AND DROP
+dropzone.addEventListener('dragover', e => { e.preventDefault(); e.stopPropagation(); dropzone.classList.add('drag-over'); });
+dropzone.addEventListener('dragleave', e => { e.preventDefault(); dropzone.classList.remove('drag-over'); });
+dropzone.addEventListener('drop', e => {
+  e.preventDefault();
+  e.stopPropagation();
+  dropzone.classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file && file.type.startsWith('video/')) handleFile(file);
+  else if (file) showError('Please upload a video file (MP4, MOV, AVI).');
+});
+
+// Click to open file picker
+dropzone.addEventListener('click', e => { fileInput.click(); });
+
+fileInput.addEventListener('change', e => {
+  if (e.target.files && e.target.files[0]) handleFile(e.target.files[0]);
+});
+
+function handleFile(file) {
+  videoFile = file;
+  const url = URL.createObjectURL(file);
+
+  document.getElementById('videoName').textContent = file.name;
+  document.getElementById('videoSize').textContent = (file.size / 1024 / 1024).toFixed(1) + ' MB';
+  document.getElementById('videoDur').textContent = '...';
+  document.getElementById('videoRes').textContent = '...';
+
+  const thumb = document.getElementById('videoThumb');
+  thumb.src = url;
+
+  // Disable button until ready
+  const btn = document.getElementById('analyzeBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span>⏳</span> Loading video...';
+
+  const tempVideo = document.createElement('video');
+  tempVideo.preload = 'auto';
+  tempVideo.muted = true;
+  tempVideo.playsInline = true;
+  tempVideo.crossOrigin = 'anonymous';
+
+  const markReady = () => {
+    videoElement = tempVideo;
+    const dur = isFinite(tempVideo.duration) ? Math.round(tempVideo.duration) + 's' : '?';
+    const res = (tempVideo.videoWidth && tempVideo.videoHeight) ? tempVideo.videoWidth + '×' + tempVideo.videoHeight : '?';
+    document.getElementById('videoDur').textContent = dur;
+    document.getElementById('videoRes').textContent = res;
+    btn.disabled = false;
+    btn.innerHTML = '<span>🔍</span> ANALYZE THIS AD';
+  };
+
+  tempVideo.onloadeddata = markReady;
+  tempVideo.oncanplay = markReady;
+
+  // Fallback: if nothing fires after 3s, enable anyway
+  setTimeout(() => {
+    if (btn.disabled) {
+      videoElement = tempVideo;
+      document.getElementById('videoDur').textContent = '?';
+      document.getElementById('videoRes').textContent = '?';
+      btn.disabled = false;
+      btn.innerHTML = '<span>🔍</span> ANALYZE THIS AD';
+    }
+  }, 3000);
+
+  tempVideo.src = url;
+  tempVideo.load();
+
+  document.getElementById('videoPreviewWrap').classList.add('show');
+  document.getElementById('uploadSection').style.display = 'none';
+  document.getElementById('errorBanner').classList.remove('show');
+}
+
+// FRAME EXTRACTION using OffscreenCanvas + play-then-capture approach
+async function extractFrames(videoFile, count = 6) {
+  const frames = [];
+  
+  try {
+    // Create a fresh object URL
+    const url = URL.createObjectURL(videoFile);
+    
+    // Create a visible video element sized for capture
+    const vid = document.createElement('video');
+    vid.muted = true;
+    vid.playsInline = true;
+    vid.style.position = 'fixed';
+    vid.style.left = '0';
+    vid.style.top = '0';
+    vid.style.width = '320px';
+    vid.style.height = '568px';
+    vid.style.opacity = '0.01'; // nearly invisible but still renders
+    vid.style.pointerEvents = 'none';
+    vid.style.zIndex = '-1';
+    document.body.appendChild(vid);
+    vid.src = url;
+
+    // Wait for metadata
+    await new Promise((resolve) => {
+      vid.onloadedmetadata = resolve;
+      vid.onerror = resolve;
+      setTimeout(resolve, 5000);
+    });
+
+    const duration = isFinite(vid.duration) ? vid.duration : 0;
+    if (duration <= 0) {
+      document.body.removeChild(vid);
+      URL.revokeObjectURL(url);
+      return frames;
+    }
+
+    const canvas = document.getElementById('extractCanvas');
+    const ctx = canvas.getContext('2d');
+    const w = vid.videoWidth || 320;
+    const h = vid.videoHeight || 568;
+    canvas.width = 320;
+    canvas.height = Math.round(320 * (h / w));
+
+    // 1 frame per second: 0.5s, 1.5s, 2.5s, etc.
+    for (let i = 0; i < count; i++) {
+      const targetTime = Math.min(0.5 + i, duration - 0.3);
+      
+      // Seek to time
+      await new Promise((resolve) => {
+        const t = setTimeout(resolve, 4000);
+        vid.onseeked = () => { clearTimeout(t); resolve(); };
+        vid.currentTime = targetTime;
+      });
+
+      // Play briefly then pause to force frame render
+      try {
+        vid.play();
+        await new Promise(r => setTimeout(r, 150));
+        vid.pause();
+        await new Promise(r => setTimeout(r, 100));
+      } catch(e) {}
+
+      // Capture
+      try {
+        ctx.drawImage(vid, 0, 0, canvas.width, canvas.height);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+        // Verify it's not blank (blank canvas produces very short base64)
+        if (dataUrl.length > 8000) {
+          frames.push({ time: targetTime.toFixed(1), dataUrl });
+        } else {
+          console.warn('Frame', i, 'appears blank, skipping');
+        }
+      } catch(e) {
+        console.warn('Canvas draw failed at', i, e.message);
+      }
+    }
+
+    document.body.removeChild(vid);
+    URL.revokeObjectURL(url);
+
+  } catch(e) {
+    console.warn('Frame extraction failed:', e.message);
+  }
+
+  console.log('Extracted', frames.length, 'frames');
+  return frames;
+}
+
+function seekVideo(video, time) {
+  return new Promise((resolve) => {
+    const timeout = setTimeout(() => resolve(), 3000);
+    video.onseeked = () => { clearTimeout(timeout); resolve(); };
+    try { video.currentTime = time; } catch(e) { clearTimeout(timeout); resolve(); }
+  });
+}
+
+function setProgress(pct, title, sub, activeStep) {
+  document.getElementById('progressBar').style.width = pct + '%';
+  document.getElementById('progressTitle').textContent = title;
+  document.getElementById('progressSub').textContent = sub;
+
+  for (let i = 1; i <= 4; i++) {
+    const el = document.getElementById('step' + i);
+    el.className = 'progress-step';
+    if (i < activeStep) el.classList.add('done');
+    if (i === activeStep) el.classList.add('active');
+  }
+}
+
+// Convert AudioBuffer to WAV format (much smaller than video for Whisper)
+function audioBufferToWav(buffer) {
+  const numChannels = Math.min(buffer.numberOfChannels, 1); // mono
+  const sampleRate = 16000; // 16kHz is enough for speech
+  const numSamples = buffer.length;
+  const byteRate = sampleRate * numChannels * 2;
+  const blockAlign = numChannels * 2;
+  const dataSize = numSamples * blockAlign;
+  const wavBuffer = new ArrayBuffer(44 + dataSize);
+  const view = new DataView(wavBuffer);
+
+  // WAV header
+  const writeStr = (offset, str) => { for (let i = 0; i < str.length; i++) view.setUint8(offset + i, str.charCodeAt(i)); };
+  writeStr(0, 'RIFF');
+  view.setUint32(4, 36 + dataSize, true);
+  writeStr(8, 'WAVE');
+  writeStr(12, 'fmt ');
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true); // PCM
+  view.setUint16(22, numChannels, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, byteRate, true);
+  view.setUint16(32, blockAlign, true);
+  view.setUint16(34, 16, true); // 16-bit
+  writeStr(36, 'data');
+  view.setUint32(40, dataSize, true);
+
+  // Resample and write audio data
+  const channelData = buffer.getChannelData(0);
+  const ratio = buffer.sampleRate / sampleRate;
+  let offset = 44;
+  for (let i = 0; i < numSamples; i++) {
+    const srcIdx = Math.min(Math.floor(i * ratio), channelData.length - 1);
+    const sample = Math.max(-1, Math.min(1, channelData[srcIdx]));
+    view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7FFF, true);
+    offset += 2;
+  }
+  return wavBuffer;
+}
+
+async function startAnalysis() {
+  if (!videoFile) {
+    showError('Please upload a video first.');
+    return;
+  }
+
+  // If videoElement isn't ready yet, wait up to 3 seconds
+  if (!videoElement) {
+    showError('Video is still loading, please wait a moment and try again.');
+    return;
+  }
+
+  const platform = document.getElementById('platform').value;
+  const targetMarket = document.getElementById('targetMarket').value;
+  const productDesc = document.getElementById('productDesc').value || 'Not specified';
+  const targetAudience = document.getElementById('targetAudience').value || 'Not specified';
+  const adObjective = document.getElementById('adObjective').value;
+  const adAngle = document.getElementById('adAngle').value;
+  const problemSolved = document.getElementById('problemSolved').value || 'Not specified';
+  const desiredCta = document.getElementById('desiredCta').value || 'Not specified';
+  const additionalContext = document.getElementById('additionalContext').value || 'None';
+  const audioDesc = document.getElementById('audioDesc').value || 'Not described';
+
+  document.getElementById('analyzeBtn').disabled = true;
+  document.getElementById('errorBanner').classList.remove('show');
+  document.getElementById('progressWrap').classList.add('show');
+  document.getElementById('videoPreviewWrap').style.display = 'none';
+
+  try {
+    // STEP 1 - Extract one frame per second
+    setProgress(10, 'Extracting frames...', 'Scanning every second of your video', 1);
+    await new Promise(r => setTimeout(r, 200));
+
+    const duration = videoElement.duration;
+    const width = videoElement.videoWidth;
+    const height = videoElement.videoHeight;
+    const aspectRatio = width > height ? 'landscape' : height > width ? 'portrait' : 'square';
+
+    // 1 frame per second, capped at 30
+    const frameCount = Math.min(Math.ceil(duration), 30);
+    const frames = await extractFrames(videoFile, frameCount);
+    console.log('Extracted', frames.length, 'frames for', duration.toFixed(1), 's video');
+
+    // STEP 2 - Whisper audio transcription
+    setProgress(35, 'Transcribing audio...', 'Extracting speech and detecting music', 2);
+    await new Promise(r => setTimeout(r, 200));
+
+    let audioData = null;
+  
+    if (true) { // OpenAI key is on the server
+      try {
+        console.log('Starting Whisper transcription, file size:', videoFile.size, 'type:', videoFile.type);
+        setProgress(35, 'Transcribing audio...', 'Extracting audio track...', 2);
+
+        // Extract audio-only using Web Audio API to reduce file size
+        let whisperFile = videoFile;
+        let whisperFilename = videoFile.name;
+        try {
+          const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          const arrayBuffer = await videoFile.arrayBuffer();
+          const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer.slice(0));
+          audioCtx.close();
+
+          // Re-encode as WAV (much smaller than video)
+          const wavBuffer = audioBufferToWav(audioBuffer);
+          whisperFile = new Blob([wavBuffer], { type: 'audio/wav' });
+          whisperFilename = 'audio.wav';
+          console.log('Audio extracted, WAV size:', whisperFile.size, 'vs video:', videoFile.size);
+        } catch(e) {
+          console.warn('Audio extraction failed, sending full video:', e.message);
+        }
+
+        setProgress(35, 'Transcribing audio...', 'Sending to Whisper...', 2);
+        const whisperForm = new FormData();
+        whisperForm.append('file', whisperFile, whisperFilename);
+        const BACKEND = 'https://hooklens-api.onrender.com';
+        console.log('Calling backend:', BACKEND + '/transcribe', 'file size:', whisperFile.size);
+        const whisperRes = await fetch(BACKEND + '/transcribe', {
+          method: 'POST',
+          headers: {},
+          body: whisperForm
+        });
+        console.log('Whisper response status:', whisperRes.status);
+        const whisperData = await whisperRes.json();
+        console.log('Whisper response:', JSON.stringify(whisperData).substring(0, 300));
+        if (whisperRes.ok && whisperData.text) {
+          const transcript = whisperData.text || '';
+          const segments = (whisperData.segments || []).map(s =>
+            '[' + s.start.toFixed(1) + 's-' + s.end.toFixed(1) + 's]: "' + s.text.trim() + '"'
+          ).join(' | ');
+          audioData = 'SPOKEN TRANSCRIPT: "' + transcript + '" | TIMESTAMPED SEGMENTS: ' + (segments || 'none detected');
+          console.log('Whisper success! Transcript:', transcript.substring(0, 200));
+        } else {
+          audioData = 'Whisper error: ' + JSON.stringify(whisperData);
+          console.error('Whisper failed:', whisperData);
+        }
+      } catch(e) {
+        audioData = 'Whisper failed: ' + e.message;
+        console.error('Whisper exception:', e);
+      }
+    } else {
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const arrayBuffer = await videoFile.arrayBuffer();
+        const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+        const ch = audioBuffer.getChannelData(0);
+        const pts = 25;
+        const samples = [];
+        for (let i = 0; i < pts; i++) {
+          const idx2 = Math.floor((i / pts) * ch.length);
+          const slice = ch.slice(idx2, idx2 + 2000);
+          const rms = Math.sqrt(slice.reduce((s, v) => s + v * v, 0) / slice.length);
+          samples.push(rms.toFixed(3));
+        }
+        const avg = (samples.reduce((a, b) => a + parseFloat(b), 0) / pts).toFixed(3);
+        const silent = samples.filter(s => parseFloat(s) < 0.01).length;
+        audioData = 'No OpenAI key - waveform only. Avg volume: ' + avg + ', Silent sections: ' + silent + '/' + pts;
+        audioCtx.close();
+      } catch(e) { audioData = 'Audio analysis unavailable'; }
+    }
+
+    const frameDescriptions = frames.length > 0 ? frames.map(f => f.time + 's').join(', ') : 'none';
+    const videoBase64 = null;
+
+
+    // STEP 3 - AI Analysis
+    setProgress(55, 'AI is analyzing your ad...', 'This usually takes 20–40 seconds', 3);
+
+    const prompt = `You are HookLens, a precise video ad analyzer. You have been given ${frames.length} actual frames from this video extracted at specific timestamps. Analyze ONLY what you can directly observe in these frames — never guess or say "likely". If you cannot see something, say "not visible in frames provided."
+
+VIDEO DETAILS:
+- Platform: ${platform}
+- Target Market: ${targetMarket}
+- Product/Service: ${productDesc}
+- Target Audience / Niche: ${targetAudience}
+- Target Age: ${targetAge}
+- Target Gender: ${targetGender}
+- Ad Objective: ${adObjective}
+- Ad Angle Used: ${adAngle}
+- Problem the Ad Solves: ${problemSolved}
+- Desired CTA / Viewer Action: ${desiredCta}
+- Audio Description (provided by user): ${audioDesc}
+- Additional Context: ${additionalContext}
+- Duration: ${duration.toFixed(1)} seconds
+- Aspect Ratio: ${aspectRatio} (${width}×${height})
+- Frames provided at timestamps: ${frameDescriptions}
+- AUDIO DATA: ${audioData || "Not available"}
+
+CRITICAL SCORING RULES (apply these consistently every time):
+- Hook score: Based ONLY on first 3 seconds. 90-100=instant pattern interrupt with clear problem/curiosity. 70-89=decent attention grab but generic. 50-69=weak open, slow to engage. Below 50=loses viewers immediately.
+- Body score: Does it explain the mechanism/proof? 90-100=shows specific product UI + social proof. 70-89=clear benefit but no proof. 50-69=vague benefits. Below 50=no clear value shown.
+- CTA score: 90-100=specific action + urgency + social proof. 70-89=clear action but no urgency. 50-69=generic download ask. Below 50=no clear CTA or buried.
+- Audio score: Based on the user-provided audio description AND caption pacing visible in frames. Evaluate: voice tone fit for audience, music energy match for platform/objective, SFX usage, overall audio-visual sync. 90-100=perfect audio strategy for platform+audience. 70-89=good but missing one element. 50-69=generic or mismatched. Below 50=wrong style for audience or no audio strategy.
+- Captions score: Based on text overlays visible in frames AND the full spoken transcript if available. Evaluate: caption readability, sync with speech, copy quality, narrative arc of the script. 90-100=captions are large/bold/synced AND script copy is compelling with strong hook→problem→solution→CTA arc. 70-89=readable captions but script copy is generic or weak in places. 50-69=caption issues or flat script. Below 50=missing captions or poor copy throughout.
+
+GEOGRAPHIC SCORING RULES (use these exact criteria every scan):
+- Mark STRONG (✓) only if: visual aesthetic, language register, and success symbols explicitly match that market's cultural norms
+- Mark MODERATE (~) if: content is neutral/generic enough to work but not optimized
+- Mark WEAK (✗) if: content contains elements that clash with that market's values
+- Always evaluate: USA, UK, Germany, Sweden, Norway, Australia, Brazil, Japan
+
+CAPTION SYNC & SCRIPT ANALYSIS INSTRUCTION:
+You MUST populate the scriptLines array in your JSON response with every significant line from the transcript or captions. This is critical.
+
+For each line:
+- "time": the timestamp range e.g. "0.0-1.5s"
+- "original": the exact spoken or caption text
+- "quality": "good" if strong copy, "weak" if improvable, "bad" if hurts conversion
+- "issue": for weak/bad lines, explain specifically why it underperforms
+- "rewrite": for weak/bad lines, provide a specific better version
+- "reason": why your rewrite is stronger (psychology, specificity, urgency, etc.)
+
+Leave "rewrite" and "reason" as null for "good" lines — do not suggest changes to strong lines.
+Aim for 6-10 script lines covering the whole ad arc.
+
+AUDIO ANALYSIS INSTRUCTION:
+The user has described the audio as: "${audioDesc}". Analyze this critically:
+1. Is the voice tone (gender, energy, authenticity) right for ${targetGender} aged ${targetAge} on ${platform}?
+2. Does the music style/energy match the ad objective (${adObjective}) and angle (${adAngle})?
+3. Are there specific moments where the audio should change to match visual transitions?
+4. What specific changes to voice delivery, music choice, or SFX would improve performance?
+Be concrete — suggest specific music genres, voice directions, or SFX types.
+
+FRAME-BY-FRAME INSTRUCTION:
+For each frame timestamp provided, describe EXACTLY what you see: text overlays word-for-word, visual content, composition. Then assess its effectiveness. Do not skip any frame.
+
+INSTRUCTIONS:
+Be brutally specific. Quote exact text you can read in frames. Reference specific timestamps. Never use the word "likely" — only state what you can observe directly.
+
+Respond ONLY with a valid JSON object in this exact structure (no markdown, no backticks, just raw JSON):
+
+{
+  "overallScore": 74,
+  "verdict": "One sentence verdict on this ad.",
+  "scores": {
+    "hook": 82,
+    "body": 65,
+    "cta": 41,
+    "audio": 78,
+    "captions": 60
+  },
+  "hookAnalysis": {
+    "score": 82,
+    "summary": "2-3 sentence analysis of the hook",
+    "fix": "Specific actionable fix with example copy or instruction"
+  },
+  "bodyAnalysis": {
+    "score": 65,
+    "summary": "2-3 sentence analysis of the body/middle section",
+    "fix": "Specific actionable fix"
+  },
+  "ctaAnalysis": {
+    "score": 41,
+    "summary": "2-3 sentence analysis of the CTA vs the desired action",
+    "fix": "Specific actionable fix with rewritten CTA example"
+  },
+  "audioAnalysis": {
+    "score": 78,
+    "summary": "2-3 sentence analysis of audio pacing, tone, music",
+    "fix": "Specific actionable fix"
+  },
+  "captionAnalysis": {
+    "score": 60,
+    "summary": "2 sentence overall caption quality assessment",
+    "fix": "One specific fix for caption readability or positioning",
+    "arcAnalysis": "One paragraph: does the spoken script follow hook→problem→solution→CTA? What is missing or out of order?",
+    "scriptLines": [
+      { "time": "0.0-1.5s", "original": "exact spoken or caption text here", "quality": "good", "issue": null, "rewrite": null, "reason": null },
+      { "time": "1.5-4.0s", "original": "exact spoken or caption text here", "quality": "weak", "issue": "why this line underperforms", "rewrite": "improved version of the line", "reason": "why the rewrite converts better" },
+      { "time": "4.0-7.0s", "original": "exact spoken or caption text here", "quality": "bad", "issue": "why this line hurts conversion", "rewrite": "much stronger version", "reason": "specific psychological principle applied" }
+    ]
+  },
+  "_scriptLinesNote": "MANDATORY: scriptLines must contain ALL significant spoken lines/captions from the video with exact timestamps from the transcript. Minimum 6 entries. Never return empty scriptLines array."
+  "angleAssessment": {
+    "angleUsed": "${adAngle}",
+    "isEffective": true,
+    "reasoning": "2-3 sentences on whether this angle is the right choice for this product, audience and platform",
+    "betterAngle": "If a different angle would work better, name it and explain why. Otherwise say 'This angle is well chosen.'"
+  },
+  "geoFit": {
+    "strong": ["Germany", "Sweden"],
+    "moderate": ["UK", "Netherlands"],
+    "weak": ["USA", "Brazil"],
+    "reasoning": "2-3 sentence explanation of why this ad fits or doesn't fit certain markets"
+  },
+  "persona": {
+    "age": "28–38",
+    "gender": "Male skewed",
+    "income": "Mid-high",
+    "intent": "High purchase intent",
+    "psychographic": "2 sentence description of the person this ad is speaking to"
+  },
+  "timeline": [
+    { "time": "0.0–2.0s", "status": "warn", "note": "Specific observation about what happens in this segment" },
+    { "time": "2.0–5.0s", "status": "good", "note": "Specific observation" },
+    { "time": "5.0–10.0s", "status": "bad", "note": "Specific observation" },
+    { "time": "10.0–end", "status": "good", "note": "Specific observation" }
+  ],
+  "topFix": "The single most important change this advertiser should make, written as a direct instruction."
+}`;
+
+    // Build message with frames if available
+    let messageContent;
+    if (frames.length > 0) {
+      // Send actual frames as images for visual analysis
+      messageContent = [
+        {
+          type: 'text',
+          text: `Here are ${frames.length} frames extracted from the video ad at key moments. Analyze these frames carefully — you can see the actual visuals, text overlays, captions, and composition.`
+        }
+      ];
+      // Add each frame as an image
+      for (const frame of frames) {
+        messageContent.push({
+          type: 'image',
+          source: {
+            type: 'base64',
+            media_type: 'image/jpeg',
+            data: frame.dataUrl.split(',')[1]
+          }
+        });
+        messageContent.push({
+          type: 'text',
+          text: `↑ Frame at ${frame.time}s`
+        });
+      }
+      messageContent.push({ type: 'text', text: prompt });
+    } else {
+      // No frames - metadata only
+      messageContent = prompt + '\n\nNOTE: Visual frame extraction was not available for this video. Analyze based on the metadata and context provided. Be transparent where you are inferring vs. observing directly.';
+    }
+
+    const messages = [{ role: 'user', content: messageContent }];
+
+    const response = await fetch('https://hooklens-api.onrender.com/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-opus-4-5',
+        max_tokens: 6000,
+        messages
+      })
+    });
+
+    if (!response.ok) {
+      const err = await response.json();
+      throw new Error(err.error?.message || 'API error');
+    }
+
+    const data = await response.json();
+    const raw = data.content.map(b => b.text || '').join('');
+    let clean = raw.replace(/```json|```/g, '').trim();
+
+    // Extract just the JSON object if there's surrounding text
+    const jsonStart = clean.indexOf('{');
+    const jsonEnd = clean.lastIndexOf('}');
+    if (jsonStart !== -1 && jsonEnd !== -1) {
+      clean = clean.substring(jsonStart, jsonEnd + 1);
+    }
+
+    let result;
+    try {
+      result = JSON.parse(clean);
+    } catch(parseErr) {
+      // Try to fix truncated JSON by closing open structures
+      let fixed = clean;
+      // Count unclosed braces/brackets
+      let braces = 0, brackets = 0, inStr = false, escape = false;
+      for (let c of fixed) {
+        if (escape) { escape = false; continue; }
+        if (c === '\\') { escape = true; continue; }
+        if (c === '"' && !escape) { inStr = !inStr; continue; }
+        if (inStr) continue;
+        if (c === '{') braces++;
+        if (c === '}') braces--;
+        if (c === '[') brackets++;
+        if (c === ']') brackets--;
+      }
+      // Close any open string
+      if (inStr) fixed += '"';
+      // Close open brackets
+      while (brackets > 0) { fixed += ']'; brackets--; }
+      // Close open braces  
+      while (braces > 0) { fixed += '}'; braces--; }
+      try {
+        result = JSON.parse(fixed);
+      } catch(e2) {
+        throw new Error('Could not parse AI response. Please try again.');
+      }
+    }
+
+    // STEP 4 - Render
+    setProgress(90, 'Building your report...', 'Almost done', 4);
+    await new Promise(r => setTimeout(r, 500));
+    setProgress(100, 'Done!', '', 4);
+    await new Promise(r => setTimeout(r, 300));
+
+    renderResults(result, { platform, targetMarket, productDesc, duration, adObjective, adAngle });
+
+  } catch (err) {
+    document.getElementById('progressWrap').classList.remove('show');
+    document.getElementById('videoPreviewWrap').style.display = 'block';
+    document.getElementById('analyzeBtn').disabled = false;
+    showError('Error: ' + err.message);
+  }
+}
+
+function scoreClass(s) {
+  if (s >= 80) return 'high';
+  if (s >= 60) return 'mid';
+  if (s >= 40) return 'low';
+  return 'danger';
+}
+
+function renderResults(r, meta) {
+  document.getElementById('progressWrap').classList.remove('show');
+  document.getElementById('resultsWrap').classList.add('show');
+
+  document.getElementById('resultsMeta').textContent =
+    `${meta.platform} · ${meta.targetMarket} · ${meta.adObjective} · ${meta.duration.toFixed(0)}s`;
+
+  // Overall score
+  document.getElementById('overallScoreNum').textContent = r.overallScore;
+
+  const scoreLabels = [
+    { key: 'hook', label: 'Hook' },
+    { key: 'body', label: 'Body' },
+    { key: 'cta', label: 'CTA' },
+    { key: 'audio', label: 'Audio' },
+    { key: 'captions', label: 'Captions' }
+  ];
+
+  document.getElementById('scoreBreakdown').innerHTML = scoreLabels.map(s => {
+    const val = r.scores[s.key];
+    const cls = scoreClass(val);
+    return `
+      <div class="score-mini">
+        <div class="score-mini-label">${s.label}</div>
+        <div class="score-mini-val c-${cls}">${val}</div>
+        <div class="score-mini-bar"><div class="score-mini-fill f-${cls}" style="width:${val}%"></div></div>
+      </div>`;
+  }).join('');
+
+  const grid = document.getElementById('resultsGrid');
+  grid.innerHTML = '';
+
+  // TOP FIX
+  grid.innerHTML += `
+    <div class="result-card full-width" style="border-color: rgba(0,229,255,0.2); background: linear-gradient(135deg, rgba(0,229,255,0.04), rgba(123,97,255,0.03));">
+      <div class="card-header">
+        <div class="card-title"><div class="card-icon icon-cyan">⚡</div> #1 Priority Fix</div>
+      </div>
+      <div class="card-body" style="font-size:15px; color: var(--text); font-weight: 500;">${r.topFix}</div>
+    </div>`;
+
+  // HOOK
+  const hookCls = scoreClass(r.hookAnalysis.score);
+  grid.innerHTML += `
+    <div class="result-card">
+      <div class="card-header">
+        <div class="card-title"><div class="card-icon icon-cyan">🎯</div> Hook Strength</div>
+        <div class="card-score-badge badge-${hookCls}">${r.hookAnalysis.score}/100</div>
+      </div>
+      <div class="card-body">${r.hookAnalysis.summary}
+        <div class="fix-item"><div class="fix-label">Fix →</div>${r.hookAnalysis.fix}</div>
+      </div>
+    </div>`;
+
+  // BODY
+  const bodyCls = scoreClass(r.bodyAnalysis.score);
+  grid.innerHTML += `
+    <div class="result-card">
+      <div class="card-header">
+        <div class="card-title"><div class="card-icon icon-purple">📺</div> Body Retention</div>
+        <div class="card-score-badge badge-${bodyCls}">${r.bodyAnalysis.score}/100</div>
+      </div>
+      <div class="card-body">${r.bodyAnalysis.summary}
+        <div class="fix-item"><div class="fix-label">Fix →</div>${r.bodyAnalysis.fix}</div>
+      </div>
+    </div>`;
+
+  // CTA
+  const ctaCls = scoreClass(r.ctaAnalysis.score);
+  grid.innerHTML += `
+    <div class="result-card">
+      <div class="card-header">
+        <div class="card-title"><div class="card-icon icon-warn">📣</div> CTA Clarity</div>
+        <div class="card-score-badge badge-${ctaCls}">${r.ctaAnalysis.score}/100</div>
+      </div>
+      <div class="card-body">${r.ctaAnalysis.summary}
+        <div class="fix-item"><div class="fix-label">Fix →</div>${r.ctaAnalysis.fix}</div>
+      </div>
+    </div>`;
+
+  // AUDIO
+  const audioCls = scoreClass(r.audioAnalysis.score);
+  grid.innerHTML += `
+    <div class="result-card">
+      <div class="card-header">
+        <div class="card-title"><div class="card-icon icon-green">🔊</div> Audio Pacing</div>
+        <div class="card-score-badge badge-${audioCls}">${r.audioAnalysis.score}/100</div>
+      </div>
+      <div class="card-body">${r.audioAnalysis.summary}
+        <div class="fix-item"><div class="fix-label">Fix →</div>${r.audioAnalysis.fix}</div>
+      </div>
+    </div>`;
+
+  // CAPTIONS / SCRIPT ANALYZER
+  const capCls = scoreClass(r.captionAnalysis.score);
+  const scriptLines = r.captionAnalysis.scriptLines || [];
+  const hasScript = scriptLines.length > 0;
+
+  let scriptHTML = '';
+  if (hasScript) {
+    scriptHTML = `
+      <div class="script-analyzer">
+        <div class="script-header-row">
+          <div class="script-col-header">📝 Original Script</div>
+          <div class="script-col-header">✨ Suggested Rewrite</div>
+        </div>
+        ${scriptLines.map(line => `
+          <div class="script-row ${line.quality}">
+            <div class="script-cell">
+              <div class="script-time">${line.time}</div>
+              <div class="script-text">"${line.original}"</div>
+              ${line.issue ? `<div class="script-issue">⚠ ${line.issue}</div>` : '<div class="script-issue good-label">✓ Strong line</div>'}
+            </div>
+            <div class="script-cell right">
+              ${line.rewrite ? `
+                <div class="script-time">${line.time}</div>
+                <div class="script-text rewrite">"${line.rewrite}"</div>
+                ${line.reason ? `<div class="script-issue">${line.reason}</div>` : ''}
+              ` : `
+                <div class="script-keep">✓ Keep as is</div>
+              `}
+            </div>
+          </div>
+        `).join('')}
+      </div>`;
+  }
+
+  grid.innerHTML += `
+    <div class="result-card full-width">
+      <div class="card-header">
+        <div class="card-title"><div class="card-icon icon-cyan">📝</div> Script & Caption Analyzer</div>
+        <div class="card-score-badge badge-${capCls}">${r.captionAnalysis.score}/100</div>
+      </div>
+      <div class="card-body">
+        <div style="margin-bottom:12px">${r.captionAnalysis.summary}</div>
+        ${scriptHTML}
+        ${!hasScript ? `<div class="fix-item"><div class="fix-label">Fix →</div>${r.captionAnalysis.fix}</div>` : ''}
+        ${hasScript && r.captionAnalysis.arcAnalysis ? `
+          <div style="margin-top:16px; padding:12px; background:rgba(0,229,255,0.05); border-radius:8px; border-left:3px solid var(--cyan);">
+            <div style="font-size:11px;color:var(--cyan);font-weight:700;margin-bottom:6px;">NARRATIVE ARC</div>
+            ${r.captionAnalysis.arcAnalysis}
+          </div>` : ''}
+      </div>
+    </div>`;
+
+  // ANGLE ASSESSMENT
+  if (r.angleAssessment) {
+    const angleColor = r.angleAssessment.isEffective ? 'green' : 'warn';
+    const angleIcon = r.angleAssessment.isEffective ? '✅' : '⚠️';
+    grid.innerHTML += `
+      <div class="result-card full-width">
+        <div class="card-header">
+          <div class="card-title"><div class="card-icon icon-purple">🎯</div> Ad Angle Assessment</div>
+          <div class="card-score-badge badge-${r.angleAssessment.isEffective ? 'high' : 'low'}">${angleIcon} ${r.angleAssessment.isEffective ? 'Effective' : 'Weak angle'}</div>
+        </div>
+        <div class="card-body">${r.angleAssessment.reasoning}
+          <div class="fix-item"><div class="fix-label">${r.angleAssessment.isEffective ? 'Insight →' : 'Better angle →'}</div>${r.angleAssessment.betterAngle}</div>
+        </div>
+      </div>`; 
+  }
+
+  // GEO FIT
+  grid.innerHTML += `
+    <div class="result-card full-width">
+      <div class="card-header">
+        <div class="card-title"><div class="card-icon icon-green">🌍</div> Geographic Fit</div>
+      </div>
+      <div class="card-body">${r.geoFit.reasoning}
+        <div class="geo-tags">
+          ${r.geoFit.strong.map(g => `<span class="geo-tag geo-strong">✓ ${g}</span>`).join('')}
+          ${r.geoFit.moderate.map(g => `<span class="geo-tag geo-mid">~ ${g}</span>`).join('')}
+          ${r.geoFit.weak.map(g => `<span class="geo-tag geo-weak">✗ ${g}</span>`).join('')}
+        </div>
+      </div>
+    </div>`;
+
+  // PERSONA
+  grid.innerHTML += `
+    <div class="result-card">
+      <div class="card-header">
+        <div class="card-title"><div class="card-icon icon-purple">👤</div> Detected Persona</div>
+      </div>
+      <div class="card-body">${r.persona.psychographic}
+        <div class="persona-box">
+          <div class="persona-item"><label>Age Range</label><span>${r.persona.age}</span></div>
+          <div class="persona-item"><label>Gender</label><span>${r.persona.gender}</span></div>
+          <div class="persona-item"><label>Income</label><span>${r.persona.income}</span></div>
+          <div class="persona-item"><label>Intent</label><span>${r.persona.intent}</span></div>
+        </div>
+      </div>
+    </div>`;
+
+  // TIMELINE
+  grid.innerHTML += `
+    <div class="result-card">
+      <div class="card-header">
+        <div class="card-title"><div class="card-icon icon-cyan">⏱</div> Attention Timeline</div>
+      </div>
+      <div class="card-body">
+        <div class="timeline-items">
+          ${r.timeline.map(t => `
+            <div class="timeline-item tl-${t.status}">
+              <div class="tl-time">${t.time}</div>
+              <div class="tl-text">${t.note}</div>
+            </div>`).join('')}
+        </div>
+      </div>
+    </div>`;
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function showError(msg) {
+  const el = document.getElementById('errorBanner');
+  el.textContent = msg;
+  el.classList.add('show');
+}
+
+function resetScanner() {
+  videoFile = null;
+  videoElement = null;
+  document.getElementById('uploadSection').style.display = 'block';
+  document.getElementById('videoPreviewWrap').classList.remove('show');
+  document.getElementById('progressWrap').classList.remove('show');
+  document.getElementById('resultsWrap').classList.remove('show');
+  document.getElementById('analyzeBtn').disabled = false;
+  document.getElementById('fileInput').value = '';
+  document.getElementById('errorBanner').classList.remove('show');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>

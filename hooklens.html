@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HookLens — AI Video Ad Scanner</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080a0f;
+    --bg2: #0d1018;
+    --surface: #111520;
+    --border: rgba(255,255,255,0.06);
+    --accent: #00e5ff;
+    --accent2: #7b61ff;
+    --accent3: #00ff9d;
+    --text: #e8eaf0;
+    --muted: #6b7280;
+    --glow: 0 0 40px rgba(0,229,255,0.15);
+    --glow-strong: 0 0 80px rgba(0,229,255,0.25);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* NOISE TEXTURE OVERLAY */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.4;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    padding: 20px 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(8,10,15,0.8);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .logo {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 800;
+    font-size: 20px;
+    letter-spacing: -0.5px;
+    color: var(--text);
+    text-decoration: none;
+  }
+
+  .logo span {
+    color: var(--accent);
+    text-shadow: 0 0 20px rgba(0,229,255,0.6);
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 36px;
+    list-style: none;
+  }
+
+  .nav-links a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    transition: color 0.2s;
+  }
+
+  .nav-links a:hover { color: var(--text); }
+
+  .nav-cta {
+    background: var(--accent);
+    color: #000;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 10px 22px;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: all 0.2s;
+    box-shadow: 0 0 20px rgba(0,229,255,0.3);
+  }
+
+  .nav-cta:hover {
+    box-shadow: 0 0 35px rgba(0,229,255,0.5);
+    transform: translateY(-1px);
+  }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 120px 24px 80px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 50% at 50% 0%, rgba(0,229,255,0.07) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 40% at 20% 80%, rgba(123,97,255,0.06) 0%, transparent 60%),
+      radial-gradient(ellipse 30% 30% at 80% 60%, rgba(0,255,157,0.04) 0%, transparent 50%);
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0,229,255,0.06);
+    border: 1px solid rgba(0,229,255,0.2);
+    border-radius: 100px;
+    padding: 6px 16px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--accent);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 36px;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  .hero-badge::before {
+    content: '';
+    width: 6px; height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    box-shadow: 0 0 8px var(--accent);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  h1 {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 800;
+    font-size: clamp(48px, 7vw, 88px);
+    line-height: 1.0;
+    letter-spacing: -3px;
+    margin-bottom: 28px;
+    animation: fadeUp 0.6s ease 0.1s both;
+  }
+
+  h1 .line1 { display: block; color: var(--text); }
+  h1 .line2 {
+    display: block;
+    color: var(--accent);
+    text-shadow: 0 0 60px rgba(0,229,255,0.4), 0 0 120px rgba(0,229,255,0.2);
+  }
+
+  .hero-sub {
+    font-size: clamp(16px, 2vw, 20px);
+    color: var(--muted);
+    max-width: 560px;
+    font-weight: 300;
+    line-height: 1.7;
+    margin-bottom: 48px;
+    animation: fadeUp 0.6s ease 0.2s both;
+  }
+
+  .hero-sub strong {
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    animation: fadeUp 0.6s ease 0.3s both;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #000;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 16px 36px;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: all 0.25s;
+    box-shadow: 0 0 30px rgba(0,229,255,0.35), 0 4px 20px rgba(0,0,0,0.4);
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 50px rgba(0,229,255,0.55), 0 8px 30px rgba(0,0,0,0.5);
+  }
+
+  .btn-secondary {
+    color: var(--muted);
+    font-size: 14px;
+    font-weight: 400;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: color 0.2s;
+  }
+
+  .btn-secondary:hover { color: var(--text); }
+
+  .btn-secondary svg { transition: transform 0.2s; }
+  .btn-secondary:hover svg { transform: translateX(3px); }
+
+  /* SCAN PREVIEW */
+  .scan-preview {
+    margin-top: 80px;
+    width: 100%;
+    max-width: 900px;
+    animation: fadeUp 0.8s ease 0.4s both;
+    position: relative;
+  }
+
+  .scan-preview::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: 17px;
+    background: linear-gradient(135deg, rgba(0,229,255,0.3), rgba(123,97,255,0.2), rgba(0,255,157,0.1));
+    z-index: 0;
+  }
+
+  .scan-preview-inner {
+    position: relative;
+    z-index: 1;
+    background: var(--surface);
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+
+  .preview-topbar {
+    background: var(--bg2);
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .dot-r { background: #ff5f57; }
+  .dot-y { background: #ffbd2e; }
+  .dot-g { background: #28ca42; }
+
+  .preview-url {
+    flex: 1;
+    background: rgba(255,255,255,0.04);
+    border-radius: 6px;
+    padding: 6px 14px;
+    font-size: 12px;
+    color: var(--muted);
+    font-family: monospace;
+  }
+
+  .preview-body {
+    padding: 32px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+
+  .preview-video {
+    background: #000;
+    border-radius: 10px;
+    aspect-ratio: 9/16;
+    max-height: 260px;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+
+  .preview-video-inner {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .scan-line {
+    position: absolute;
+    left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    box-shadow: 0 0 10px var(--accent);
+    animation: scanMove 2s ease-in-out infinite;
+    top: 0;
+  }
+
+  @keyframes scanMove {
+    0% { top: 0; opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { top: 100%; opacity: 0; }
+  }
+
+  .play-icon {
+    width: 40px; height: 40px;
+    background: rgba(0,229,255,0.15);
+    border: 1px solid rgba(0,229,255,0.3);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .preview-scores {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    justify-content: center;
+  }
+
+  .score-label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 16px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+
+  .score-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .score-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .score-name {
+    font-size: 13px;
+    color: var(--text);
+    font-weight: 400;
+  }
+
+  .score-val {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .score-val.high { color: var(--accent3); text-shadow: 0 0 10px rgba(0,255,157,0.4); }
+  .score-val.mid { color: var(--accent); text-shadow: 0 0 10px rgba(0,229,255,0.4); }
+  .score-val.low { color: #ff6b6b; text-shadow: 0 0 10px rgba(255,107,107,0.4); }
+
+  .score-bar-bg {
+    height: 4px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .score-bar-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 1s ease;
+  }
+
+  .fill-high { background: var(--accent3); box-shadow: 0 0 8px rgba(0,255,157,0.5); }
+  .fill-mid { background: var(--accent); box-shadow: 0 0 8px rgba(0,229,255,0.5); }
+  .fill-low { background: #ff6b6b; box-shadow: 0 0 8px rgba(255,107,107,0.5); }
+
+  .preview-tag {
+    position: absolute;
+    top: 12px; left: 12px;
+    background: rgba(0,0,0,0.7);
+    border: 1px solid rgba(0,229,255,0.3);
+    border-radius: 4px;
+    padding: 3px 8px;
+    font-size: 10px;
+    color: var(--accent);
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    backdrop-filter: blur(4px);
+  }
+
+  /* FEATURES */
+  section {
+    padding: 100px 24px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .section-label {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 20px;
+  }
+
+  .section-title {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: clamp(32px, 4vw, 52px);
+    font-weight: 800;
+    letter-spacing: -1.5px;
+    line-height: 1.1;
+    color: var(--text);
+    margin-bottom: 20px;
+  }
+
+  .section-sub {
+    font-size: 17px;
+    color: var(--muted);
+    font-weight: 300;
+    max-width: 520px;
+    line-height: 1.7;
+    margin-bottom: 60px;
+  }
+
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    background: var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+
+  .feature-card {
+    background: var(--surface);
+    padding: 36px 32px;
+    transition: background 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .feature-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .feature-card:hover { background: #141824; }
+  .feature-card:hover::before { opacity: 1; }
+
+  .feature-icon {
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 20px;
+    font-size: 20px;
+  }
+
+  .feature-icon.cyan { background: rgba(0,229,255,0.1); border: 1px solid rgba(0,229,255,0.2); }
+  .feature-icon.purple { background: rgba(123,97,255,0.1); border: 1px solid rgba(123,97,255,0.2); }
+  .feature-icon.green { background: rgba(0,255,157,0.1); border: 1px solid rgba(0,255,157,0.2); }
+
+  .feature-title {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 10px;
+    letter-spacing: -0.3px;
+  }
+
+  .feature-desc {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.65;
+    font-weight: 300;
+  }
+
+  /* HOW IT WORKS */
+  .how-section {
+    padding: 100px 24px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 48px;
+    margin-top: 60px;
+  }
+
+  .step {
+    position: relative;
+  }
+
+  .step-num {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 72px;
+    font-weight: 800;
+    color: rgba(0,229,255,0.06);
+    line-height: 1;
+    margin-bottom: 16px;
+    letter-spacing: -4px;
+  }
+
+  .step-title {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 10px;
+    letter-spacing: -0.3px;
+  }
+
+  .step-desc {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.7;
+    font-weight: 300;
+  }
+
+  /* INSIGHTS */
+  .insights-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-top: 60px;
+  }
+
+  .insight-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px;
+    transition: border-color 0.3s;
+  }
+
+  .insight-card:hover { border-color: rgba(0,229,255,0.2); }
+
+  .insight-card.featured {
+    grid-column: span 2;
+    background: linear-gradient(135deg, rgba(0,229,255,0.04), rgba(123,97,255,0.04));
+    border-color: rgba(0,229,255,0.15);
+  }
+
+  .insight-tag {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 4px;
+    margin-bottom: 16px;
+  }
+
+  .tag-cyan { background: rgba(0,229,255,0.1); color: var(--accent); }
+  .tag-purple { background: rgba(123,97,255,0.1); color: var(--accent2); }
+  .tag-green { background: rgba(0,255,157,0.1); color: var(--accent3); }
+
+  .insight-title {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+
+  .insight-value {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 300;
+    line-height: 1.6;
+  }
+
+  .insight-big {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 42px;
+    font-weight: 800;
+    color: var(--accent);
+    text-shadow: 0 0 30px rgba(0,229,255,0.3);
+    letter-spacing: -2px;
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+
+  /* PRICING */
+  .pricing-section {
+    padding: 100px 24px;
+    max-width: 900px;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .pricing-cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-top: 60px;
+    text-align: left;
+    align-items: stretch;
+  }
+
+  .pricing-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 22px 20px;
+    transition: all 0.3s;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .pricing-card .plan-btn {
+    margin-top: auto;
+  }
+
+  .pricing-card:hover { border-color: rgba(0,229,255,0.15); }
+
+  .pricing-card.popular {
+    border-color: rgba(0,229,255,0.3);
+    background: linear-gradient(135deg, rgba(0,229,255,0.04), rgba(123,97,255,0.03));
+    position: relative;
+    overflow: hidden;
+  }
+
+  .pricing-card.popular::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent2), var(--accent), var(--accent3));
+  }
+
+  .popular-badge {
+    display: inline-block;
+    background: rgba(0,229,255,0.1);
+    border: 1px solid rgba(0,229,255,0.2);
+    color: var(--accent);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+  }
+
+  .plan-name {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  .plan-price {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 48px;
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: -3px;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+
+  .plan-price sup {
+    font-size: 20px;
+    letter-spacing: 0;
+    vertical-align: super;
+  }
+
+  .plan-period {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 28px;
+    font-weight: 300;
+  }
+
+  .plan-divider {
+    height: 1px;
+    background: var(--border);
+    margin-bottom: 24px;
+  }
+
+  .plan-features {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 20px;
+    flex: 1;
+  }
+
+  .plan-features li {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 12.5px;
+    color: var(--muted);
+    font-weight: 300;
+    line-height: 1.4;
+  }
+
+  .plan-features li .check {
+    color: var(--accent);
+    font-size: 13px;
+    margin-top: 1px;
+    flex-shrink: 0;
+  }
+
+  .plan-btn {
+    display: block;
+    text-align: center;
+    padding: 14px;
+    border-radius: 8px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: all 0.25s;
+  }
+
+  .plan-btn-outline {
+    border: 1px solid var(--border);
+    color: var(--muted);
+  }
+
+  .plan-btn-outline:hover {
+    border-color: rgba(0,229,255,0.3);
+    color: var(--text);
+  }
+
+  .plan-btn-filled {
+    background: var(--accent);
+    color: #000;
+    box-shadow: 0 0 25px rgba(0,229,255,0.3);
+  }
+
+  .plan-btn-filled:hover {
+    box-shadow: 0 0 40px rgba(0,229,255,0.5);
+    transform: translateY(-1px);
+  }
+
+  /* CTA SECTION */
+  .cta-section {
+    padding: 80px 24px 120px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cta-section::before {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 600px; height: 300px;
+    background: radial-gradient(ellipse, rgba(0,229,255,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .cta-title {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: clamp(36px, 5vw, 64px);
+    font-weight: 800;
+    letter-spacing: -2px;
+    line-height: 1.1;
+    margin-bottom: 20px;
+    color: var(--text);
+  }
+
+  .cta-title span {
+    color: var(--accent);
+    text-shadow: 0 0 40px rgba(0,229,255,0.4);
+  }
+
+  .cta-sub {
+    font-size: 17px;
+    color: var(--muted);
+    font-weight: 300;
+    margin-bottom: 44px;
+  }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 36px 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .footer-logo {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 800;
+    font-size: 16px;
+    color: var(--text);
+  }
+
+  .footer-logo span { color: var(--accent); }
+
+  .footer-copy {
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 300;
+  }
+
+  .footer-links {
+    display: flex;
+    gap: 24px;
+    list-style: none;
+  }
+
+  .footer-links a {
+    font-size: 13px;
+    color: var(--muted);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .footer-links a:hover { color: var(--text); }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* DIVIDER */
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+    margin: 0 48px;
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="logo">Hook<span>Lens</span></a>
+  <ul class="nav-links">
+    <li><a href="#features">Features</a></li>
+    <li><a href="#how">How it works</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+  </ul>
+  <a href="hooklens-scanner.html" class="nav-cta">Try Free →</a>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-bg"></div>
+
+  <div class="hero-badge">AI-Powered Ad Intelligence</div>
+
+  <h1>
+    <span class="line1">Know why your ad</span>
+    <span class="line2">fails before it runs.</span>
+  </h1>
+
+  <p class="hero-sub">
+    Upload any video ad. HookLens scans it <strong>frame by frame</strong>, analyzes the hook, audio, captions, and body — then tells you exactly what to fix and which markets it'll convert in.
+  </p>
+
+  <div class="hero-actions">
+    <a href="hooklens-scanner.html" class="btn-primary">Analyze Your First Ad Free →</a>
+    <a href="#how" class="btn-secondary">
+      See how it works
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </a>
+  </div>
+
+  <!-- MOCK SCANNER UI -->
+  <div class="scan-preview">
+    <div class="scan-preview-inner">
+      <div class="preview-topbar">
+        <div class="dot dot-r"></div>
+        <div class="dot dot-y"></div>
+        <div class="dot dot-g"></div>
+        <div class="preview-url">hooklens.io — analyzing ad_campaign_v3.mp4</div>
+      </div>
+      <div class="preview-body">
+        <div class="preview-video">
+          <div class="preview-video-inner">
+            <div class="scan-line"></div>
+            <div class="preview-tag">SCANNING</div>
+            <div class="play-icon">
+              <svg width="14" height="16" viewBox="0 0 14 16" fill="none">
+                <path d="M1 1l12 7-12 7V1z" fill="rgba(0,229,255,0.8)"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+        <div class="preview-scores">
+          <div class="score-label">Analysis Results</div>
+          <div class="score-item">
+            <div class="score-row">
+              <span class="score-name">Hook Strength</span>
+              <span class="score-val high">92/100</span>
+            </div>
+            <div class="score-bar-bg"><div class="score-bar-fill fill-high" style="width:92%"></div></div>
+          </div>
+          <div class="score-item">
+            <div class="score-row">
+              <span class="score-name">Body Retention</span>
+              <span class="score-val mid">74/100</span>
+            </div>
+            <div class="score-bar-bg"><div class="score-bar-fill fill-mid" style="width:74%"></div></div>
+          </div>
+          <div class="score-item">
+            <div class="score-row">
+              <span class="score-name">CTA Clarity</span>
+              <span class="score-val low">41/100</span>
+            </div>
+            <div class="score-bar-bg"><div class="score-bar-fill fill-low" style="width:41%"></div></div>
+          </div>
+          <div class="score-item">
+            <div class="score-row">
+              <span class="score-name">Audio Pacing</span>
+              <span class="score-val high">88/100</span>
+            </div>
+            <div class="score-bar-bg"><div class="score-bar-fill fill-high" style="width:88%"></div></div>
+          </div>
+          <div class="score-item">
+            <div class="score-row">
+              <span class="score-name">Caption Sync</span>
+              <span class="score-val mid">67/100</span>
+            </div>
+            <div class="score-bar-bg"><div class="score-bar-fill fill-mid" style="width:67%"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="reveal">
+    <div class="section-label">What we analyze</div>
+    <h2 class="section-title">Deeper than any tool<br>on the market.</h2>
+    <p class="section-sub">GoMarble looks at your ad account data. HookLens looks at the actual creative — second by second.</p>
+  </div>
+
+  <div class="features-grid reveal">
+    <div class="feature-card">
+      <div class="feature-icon cyan">🎯</div>
+      <div class="feature-title">Frame-by-Frame Hook Analysis</div>
+      <p class="feature-desc">We identify the exact second your viewer disengages. Not just "weak hook" — but frame 2.4s where your pacing stalls.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon purple">🔊</div>
+      <div class="feature-title">Audio Intelligence</div>
+      <p class="feature-desc">Voice tone, music tempo, speech pacing, background sound — analyzed against what actually converts in your target market.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon green">🌍</div>
+      <div class="feature-title">Geographic Fit Score</div>
+      <p class="feature-desc">Cultural cues, language register, visual norms — we score which countries this ad will perform in and why.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon cyan">👤</div>
+      <div class="feature-title">Persona Detection</div>
+      <p class="feature-desc">Who is this ad actually speaking to? We extract the target persona purely from visual and audio signals.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon purple">✂️</div>
+      <div class="feature-title">Specific Fix Suggestions</div>
+      <p class="feature-desc">Not "improve your CTA." We rewrite it for you. Specific edits, specific frames, specific copy changes.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon green">📐</div>
+      <div class="feature-title">Caption & Visual Sync</div>
+      <p class="feature-desc">Caption timing, font readability, color contrast, and on-screen text density — scored against platform best practices.</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- HOW IT WORKS -->
+<div class="how-section" id="how">
+  <div class="reveal">
+    <div class="section-label">Process</div>
+    <h2 class="section-title">Three steps.<br>One complete picture.</h2>
+  </div>
+
+  <div class="steps">
+    <div class="step reveal">
+      <div class="step-num">01</div>
+      <div class="step-title">Upload your video ad</div>
+      <p class="step-desc">Any format, any platform. TikTok, Meta, YouTube, Instagram. Drop it in and we start scanning immediately.</p>
+    </div>
+    <div class="step reveal">
+      <div class="step-num">02</div>
+      <div class="step-title">AI scans every layer</div>
+      <p class="step-desc">Frame-by-frame visuals, audio waveform, caption sync, hook pacing, CTA placement — analyzed simultaneously in under 60 seconds.</p>
+    </div>
+    <div class="step reveal">
+      <div class="step-num">03</div>
+      <div class="step-title">Get your fix report</div>
+      <p class="step-desc">A scored report with specific edits, predicted market performance, persona fit, and rewritten copy suggestions ready to act on.</p>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+
+
+<!-- PRICING -->
+<div class="pricing-section" id="pricing">
+  <div class="reveal">
+    <div class="section-label">Pricing</div>
+    <h2 class="section-title">Simple. Transparent.<br>Scales with you.</h2>
+    <p class="section-sub" style="margin: 0 auto 0;">No per-seat nonsense. Pay for what you actually use.</p>
+  </div>
+
+  <div class="pricing-cards reveal" style="max-width: 1100px;">
+    <div class="pricing-card">
+      <div class="plan-name">Free</div>
+      <div class="plan-price"><sup>€</sup>0</div>
+      <div class="plan-period">1 scan · email required</div>
+      <div class="plan-divider"></div>
+      <ul class="plan-features">
+        <li><span class="check">✓</span> 1 full video scan</li>
+        <li><span class="check">✓</span> All scoring categories</li>
+        <li><span class="check">✓</span> Script rewrite suggestions</li>
+        <li><span class="check">✓</span> Hook + CTA + audio analysis</li>
+        <li><span class="check">✓</span> No credit card needed</li>
+      </ul>
+      <a href="hooklens-scanner.html" class="plan-btn plan-btn-outline">Try Free →</a>
+    </div>
+    <div class="pricing-card">
+      <div class="plan-name">Starter</div>
+      <div class="plan-price"><sup>€</sup>29</div>
+      <div class="plan-period">per month</div>
+      <div class="plan-divider"></div>
+      <ul class="plan-features">
+        <li><span class="check">✓</span> 15 scans / month</li>
+        <li><span class="check">✓</span> All Free features</li>
+        <li><span class="check">✓</span> Geographic fit report</li>
+        <li><span class="check">✓</span> Persona detection</li>
+        <li><span class="check">✓</span> Attention timeline</li>
+        <li><span class="check">✓</span> Whisper audio transcript</li>
+      </ul>
+      <a href="hooklens-scanner.html" class="plan-btn plan-btn-outline">Get Started</a>
+    </div>
+    <div class="pricing-card popular">
+      <div class="popular-badge">Most Popular</div>
+      <div class="plan-name">Pro</div>
+      <div class="plan-price"><sup>€</sup>49</div>
+      <div class="plan-period">per month</div>
+      <div class="plan-divider"></div>
+      <ul class="plan-features">
+        <li><span class="check">✓</span> 30 scans / month</li>
+        <li><span class="check">✓</span> Everything in Starter</li>
+        <li><span class="check">✓</span> Script side-by-side rewrites</li>
+        <li><span class="check">✓</span> Narrative arc analysis</li>
+        <li><span class="check">✓</span> Priority processing</li>
+        <li><span class="check">✓</span> Client-ready report export</li>
+      </ul>
+      <a href="hooklens-scanner.html" class="plan-btn plan-btn-filled">Get Started</a>
+    </div>
+    <div class="pricing-card">
+      <div class="plan-name">Agency</div>
+      <div class="plan-price"><sup>€</sup>99</div>
+      <div class="plan-period">per month</div>
+      <div class="plan-divider"></div>
+      <ul class="plan-features">
+        <li><span class="check">✓</span> 100 scans / month</li>
+        <li><span class="check">✓</span> Everything in Pro</li>
+        <li><span class="check">✓</span> Team access</li>
+        <li><span class="check">✓</span> Bulk upload</li>
+        <li><span class="check">✓</span> API access</li>
+        <li><span class="check">✓</span> Dedicated support</li>
+      </ul>
+      <a href="hooklens-scanner.html" class="plan-btn plan-btn-outline">Get Started</a>
+    </div>
+  </div>
+  <div class="reveal" style="margin-top: 32px; display: flex; justify-content: center;">
+    <div class="pricing-card" style="max-width: 600px; width: 100%; background: linear-gradient(135deg, rgba(0,229,255,0.06), rgba(123,97,255,0.06)); border-color: rgba(0,229,255,0.3); display: flex; flex-direction: column; gap: 0;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:16px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+          <div class="plan-name">Yearly Pro</div>
+          <div style="background: linear-gradient(135deg, #00e5ff, #7b61ff); color: #000; font-size: 11px; font-weight: 800; padding: 5px 12px; border-radius: 20px; letter-spacing: 1px;">BEST VALUE</div>
+        </div>
+        <div style="display:flex; align-items:baseline; gap:10px; margin-top:10px; flex-wrap:wrap;">
+          <div class="plan-price" style="margin:0"><sup>€</sup>399</div>
+          <span style="font-size:13px; color:var(--muted);">/ year</span>
+          <span style="font-size:13px; color:#00e5ff; font-weight:600;">· €33/mo · save 32%</span>
+        </div>
+      </div>
+      <div class="plan-divider"></div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px 24px;">
+        <div><span class="check">✓</span> 30 scans / month</div>
+        <div><span class="check">✓</span> Everything in Pro</div>
+        <div><span class="check">✓</span> Script side-by-side rewrites</div>
+        <div><span class="check">✓</span> Narrative arc analysis</div>
+        <div><span class="check">✓</span> Priority processing</div>
+        <div><span class="check">✓</span> Client-ready report export</div>
+      </div>
+      <div style="margin-top: 20px;">
+        <a href="hooklens-scanner.html" class="plan-btn plan-btn-filled" style="width:100%; text-align:center; display:block;">Get Yearly Pro — Save €188 →</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CTA -->
+<div class="cta-section reveal">
+  <h2 class="cta-title">Stop guessing.<br><span>Start knowing.</span></h2>
+  <p class="cta-sub">Upload your first ad free. No credit card required.</p>
+  <a href="hooklens-scanner.html" class="btn-primary">Analyze Your First Ad Free →</a>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Hook<span>Lens</span></div>
+  <div class="footer-copy">© 2025 HookLens. All rights reserved.</div>
+  <ul class="footer-links">
+    <li><a href="#">Privacy</a></li>
+    <li><a href="#">Terms</a></li>
+    <li><a href="#">Contact</a></li>
+  </ul>
+</footer>
+
+<script>
+  // Scroll reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('visible'), i * 80);
+      }
+    });
+  }, { threshold: 0.1 });
+  reveals.forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
