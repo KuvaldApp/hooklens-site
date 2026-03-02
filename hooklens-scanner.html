@@ -749,9 +749,181 @@
   }
 
   .error-banner.show { display: block; }
+
+  /* EMAIL GATE OVERLAY */
+  .gate-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(8,10,15,0.97);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .gate-overlay.hidden { display: none; }
+  .gate-box {
+    background: var(--surface);
+    border: 1px solid rgba(0,229,255,0.2);
+    border-radius: 20px;
+    padding: 48px 40px;
+    max-width: 460px;
+    width: 100%;
+    text-align: center;
+  }
+  .gate-logo { font-size: 22px; font-weight: 800; color: var(--text); margin-bottom: 24px; }
+  .gate-logo span { color: var(--cyan); }
+  .gate-title { font-size: 26px; font-weight: 700; margin-bottom: 12px; }
+  .gate-sub { font-size: 15px; color: var(--muted); margin-bottom: 32px; line-height: 1.6; }
+  .gate-input {
+    width: 100%;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-size: 15px;
+    color: var(--text);
+    margin-bottom: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+  }
+  .gate-input:focus { border-color: var(--cyan); }
+  .gate-btn {
+    width: 100%;
+    background: var(--cyan);
+    color: #000;
+    border: none;
+    border-radius: 10px;
+    padding: 15px;
+    font-size: 15px;
+    font-weight: 800;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: opacity 0.2s;
+  }
+  .gate-btn:hover { opacity: 0.9; }
+  .gate-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .gate-note { font-size: 12px; color: var(--muted); margin-top: 14px; }
+  .gate-error { font-size: 13px; color: #ff6b6b; margin-top: 10px; }
+
+  /* PAYWALL MODAL */
+  .paywall-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(8,10,15,0.97);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .paywall-overlay.hidden { display: none; }
+  .paywall-box {
+    background: var(--surface);
+    border: 1px solid rgba(0,229,255,0.15);
+    border-radius: 20px;
+    padding: 40px;
+    max-width: 700px;
+    width: 100%;
+    text-align: center;
+  }
+  .paywall-title { font-size: 28px; font-weight: 800; margin-bottom: 10px; }
+  .paywall-sub { font-size: 15px; color: var(--muted); margin-bottom: 36px; }
+  .paywall-plans { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+  .paywall-plan {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+  }
+  .paywall-plan:hover, .paywall-plan.selected { border-color: var(--cyan); background: rgba(0,229,255,0.04); }
+  .paywall-plan.popular { border-color: rgba(0,229,255,0.3); }
+  .paywall-popular-badge {
+    position: absolute;
+    top: -10px; left: 50%; transform: translateX(-50%);
+    background: var(--cyan); color: #000;
+    font-size: 10px; font-weight: 800;
+    padding: 3px 10px; border-radius: 20px; letter-spacing: 1px;
+    white-space: nowrap;
+  }
+  .paywall-plan-name { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .paywall-plan-price { font-size: 28px; font-weight: 800; color: var(--text); }
+  .paywall-plan-price sup { font-size: 14px; }
+  .paywall-plan-period { font-size: 11px; color: var(--muted); margin-bottom: 10px; }
+  .paywall-plan-scans { font-size: 12px; color: var(--cyan); font-weight: 600; }
+  .paywall-checkout-btn {
+    background: var(--cyan); color: #000;
+    border: none; border-radius: 10px;
+    padding: 15px 40px;
+    font-size: 15px; font-weight: 800;
+    cursor: pointer; letter-spacing: 0.5px;
+    transition: opacity 0.2s;
+    margin-bottom: 16px;
+  }
+  .paywall-checkout-btn:hover { opacity: 0.9; }
+  .paywall-back { font-size: 13px; color: var(--muted); cursor: pointer; text-decoration: underline; }
+  .paywall-back:hover { color: var(--text); }
+  .scan-counter {
+    font-size: 12px;
+    color: var(--muted);
+    text-align: right;
+    padding: 6px 0 0 0;
+  }
+  .scan-counter span { color: var(--cyan); font-weight: 600; }
+
 </style>
 </head>
 <body>
+
+
+<!-- EMAIL GATE -->
+<div class="gate-overlay" id="gateOverlay">
+  <div class="gate-box">
+    <div class="gate-logo">Hook<span>Lens</span></div>
+    <div class="gate-title">Analyze your first ad free</div>
+    <div class="gate-sub">Enter your email to get one free full scan.<br>No credit card required.</div>
+    <input class="gate-input" type="email" id="gateEmail" placeholder="your@email.com" />
+    <button class="gate-btn" id="gateBtn" onclick="submitGate()">Get Free Scan →</button>
+    <div class="gate-error" id="gateError"></div>
+    <div class="gate-note">We'll never spam you. Unsubscribe anytime.</div>
+  </div>
+</div>
+
+<!-- PAYWALL -->
+<div class="paywall-overlay hidden" id="paywallOverlay">
+  <div class="paywall-box">
+    <div class="paywall-title">You've used your free scan 🎉</div>
+    <div class="paywall-sub">Upgrade to keep analyzing ads and scaling what works.</div>
+    <div class="paywall-plans">
+      <div class="paywall-plan" onclick="selectPlan('starter')" id="plan-starter">
+        <div class="paywall-plan-name">Starter</div>
+        <div class="paywall-plan-price"><sup>€</sup>29</div>
+        <div class="paywall-plan-period">per month</div>
+        <div class="paywall-plan-scans">15 scans / month</div>
+      </div>
+      <div class="paywall-plan popular selected" onclick="selectPlan('pro')" id="plan-pro">
+        <div class="paywall-popular-badge">MOST POPULAR</div>
+        <div class="paywall-plan-name">Pro</div>
+        <div class="paywall-plan-price"><sup>€</sup>49</div>
+        <div class="paywall-plan-period">per month</div>
+        <div class="paywall-plan-scans">30 scans / month</div>
+      </div>
+      <div class="paywall-plan" onclick="selectPlan('agency')" id="plan-agency">
+        <div class="paywall-plan-name">Agency</div>
+        <div class="paywall-plan-price"><sup>€</sup>99</div>
+        <div class="paywall-plan-period">per month</div>
+        <div class="paywall-plan-scans">100 scans / month</div>
+      </div>
+    </div>
+    <button class="paywall-checkout-btn" id="checkoutBtn" onclick="goToCheckout()">Continue with Pro — €49/mo →</button>
+    <br>
+    <span class="paywall-back" onclick="document.getElementById('paywallOverlay').classList.add('hidden')">← Back to scanner</span>
+  </div>
+</div>
 
 <nav>
   <a href="hooklens.html" class="logo">Hook<span>Lens</span></a>
@@ -1204,6 +1376,21 @@ function audioBufferToWav(buffer) {
 }
 
 async function startAnalysis() {
+  // Check scan limit before running
+  if (currentEmail) {
+    const res = await fetch(BACKEND + '/use-scan', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: currentEmail })
+    });
+    const data = await res.json();
+    if (res.status === 403 || data.needsUpgrade) {
+      showPaywall();
+      return;
+    }
+    userScansRemaining = data.scansRemaining;
+  }
+
   if (!videoFile) {
     showError('Please upload a video first.');
     return;
@@ -1807,6 +1994,142 @@ function resetScanner() {
   document.getElementById('errorBanner').classList.remove('show');
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
+
+// ── EMAIL GATE & PAYWALL ──────────────────────────────────
+const BACKEND = 'https://hooklens-api.onrender.com';
+let currentEmail = null;
+let selectedPlan = 'pro';
+let userScansRemaining = 0;
+
+// Check URL for payment success
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get('payment') === 'success') {
+  const email = urlParams.get('email');
+  if (email) {
+    currentEmail = email;
+    localStorage.setItem('hl_email', email);
+    // Refresh user status from backend
+    checkGate(email, true);
+  }
+}
+
+async function checkGate(email, skipOverlay = false) {
+  try {
+    const res = await fetch(BACKEND + '/gate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+    const data = await res.json();
+    currentEmail = email;
+    userScansRemaining = data.scansRemaining;
+
+    // Update scan counter in UI
+    updateScanCounter(data);
+
+    if (!skipOverlay) {
+      document.getElementById('gateOverlay').classList.add('hidden');
+    } else {
+      document.getElementById('gateOverlay').classList.add('hidden');
+      document.getElementById('paywallOverlay').classList.add('hidden');
+    }
+    return data;
+  } catch(e) {
+    console.error('Gate check failed:', e);
+    // On error, let them through so backend issues don't block users
+    document.getElementById('gateOverlay').classList.add('hidden');
+    return null;
+  }
+}
+
+function updateScanCounter(data) {
+  let counter = document.getElementById('scanCounter');
+  if (!counter) {
+    counter = document.createElement('div');
+    counter.id = 'scanCounter';
+    counter.className = 'scan-counter';
+    const nav = document.querySelector('nav');
+    if (nav) nav.appendChild(counter);
+  }
+  if (data.plan === 'free') {
+    counter.innerHTML = data.scansRemaining > 0
+      ? `<span>${data.scansRemaining}</span> free scan remaining`
+      : `<span style="color:#ff6b6b">0</span> scans remaining · <a href="#" onclick="showPaywall()" style="color:var(--cyan)">Upgrade</a>`;
+  } else {
+    counter.innerHTML = `<span>${data.scansRemaining}</span> scans left · ${data.plan}`;
+  }
+}
+
+async function submitGate() {
+  const email = document.getElementById('gateEmail').value.trim();
+  const btn = document.getElementById('gateBtn');
+  const errEl = document.getElementById('gateError');
+
+  if (!email || !email.includes('@')) {
+    errEl.textContent = 'Please enter a valid email address.';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Checking...';
+  errEl.textContent = '';
+
+  localStorage.setItem('hl_email', email);
+  await checkGate(email);
+
+  btn.disabled = false;
+  btn.textContent = 'Get Free Scan →';
+}
+
+function showPaywall() {
+  document.getElementById('paywallOverlay').classList.remove('hidden');
+}
+
+function selectPlan(plan) {
+  selectedPlan = plan;
+  document.querySelectorAll('.paywall-plan').forEach(el => el.classList.remove('selected'));
+  document.getElementById('plan-' + plan).classList.add('selected');
+
+  const prices = { starter: '€29/mo', pro: '€49/mo', agency: '€99/mo' };
+  const names = { starter: 'Starter', pro: 'Pro', agency: 'Agency' };
+  document.getElementById('checkoutBtn').textContent = `Continue with ${names[plan]} — ${prices[plan]} →`;
+}
+
+async function goToCheckout() {
+  if (!currentEmail) return;
+  const btn = document.getElementById('checkoutBtn');
+  btn.textContent = 'Redirecting to Stripe...';
+  btn.disabled = true;
+
+  try {
+    const res = await fetch(BACKEND + '/create-checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: currentEmail, plan: selectedPlan })
+    });
+    const data = await res.json();
+    if (data.url) {
+      window.location.href = data.url;
+    } else {
+      btn.textContent = 'Error — try again';
+      btn.disabled = false;
+    }
+  } catch(e) {
+    btn.textContent = 'Error — try again';
+    btn.disabled = false;
+  }
+}
+
+// On page load — check if user already has email saved
+window.addEventListener('DOMContentLoaded', () => {
+  const savedEmail = localStorage.getItem('hl_email');
+  if (savedEmail) {
+    document.getElementById('gateEmail').value = savedEmail;
+    checkGate(savedEmail);
+  }
+});
+// ─────────────────────────────────────────────────────────
+
 </script>
 </body>
 </html>
