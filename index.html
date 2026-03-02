@@ -884,6 +884,86 @@
     background: linear-gradient(90deg, transparent, var(--border), transparent);
     margin: 0 48px;
   }
+
+  /* CONTACT SECTION */
+  .contact-section {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 80px 24px;
+    text-align: center;
+  }
+  .contact-form {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 40px;
+    margin-top: 40px;
+    text-align: left;
+  }
+  .contact-field {
+    margin-bottom: 16px;
+  }
+  .contact-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+  .contact-input {
+    width: 100%;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 14px;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+    font-family: inherit;
+  }
+  .contact-input:focus { border-color: var(--accent); }
+  .contact-textarea {
+    resize: vertical;
+    min-height: 120px;
+  }
+  .contact-btn {
+    width: 100%;
+    background: var(--accent);
+    color: #000;
+    border: none;
+    border-radius: 10px;
+    padding: 14px;
+    font-size: 14px;
+    font-weight: 800;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: opacity 0.2s;
+    margin-top: 8px;
+  }
+  .contact-btn:hover { opacity: 0.85; }
+  .contact-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .contact-success {
+    display: none;
+    background: rgba(0,255,157,0.08);
+    border: 1px solid rgba(0,255,157,0.2);
+    border-radius: 10px;
+    padding: 16px;
+    color: var(--accent3);
+    font-size: 14px;
+    text-align: center;
+    margin-top: 16px;
+  }
+  .contact-error {
+    font-size: 12px;
+    color: #ff6b6b;
+    margin-top: 8px;
+    display: none;
+  }
+
 </style>
 </head>
 <body>
@@ -896,7 +976,7 @@
     <li><a href="#how">How it works</a></li>
     <li><a href="#pricing">Pricing</a></li>
   </ul>
-  <a href="hooklens-scanner.html" class="nav-cta">Try Free →</a>
+  <a href="/scan" class="nav-cta">Try Free →</a>
 </nav>
 
 <!-- HERO -->
@@ -915,7 +995,7 @@
   </p>
 
   <div class="hero-actions">
-    <a href="hooklens-scanner.html" class="btn-primary">Analyze Your First Ad Free →</a>
+    <a href="/scan" class="btn-primary">Analyze Your First Ad Free →</a>
     <a href="#how" class="btn-secondary">
       See how it works
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -1085,7 +1165,7 @@
         <li><span class="check">✓</span> Hook + CTA + audio analysis</li>
         <li><span class="check">✓</span> No credit card needed</li>
       </ul>
-      <a href="hooklens-scanner.html" class="plan-btn plan-btn-outline">Try Free →</a>
+      <a href="/scan" class="plan-btn plan-btn-outline">Try Free →</a>
     </div>
     <div class="pricing-card">
       <div class="plan-name">Starter</div>
@@ -1100,7 +1180,7 @@
         <li><span class="check">✓</span> Attention timeline</li>
         <li><span class="check">✓</span> Whisper audio transcript</li>
       </ul>
-      <a href="hooklens-scanner.html" class="plan-btn plan-btn-outline">Get Started</a>
+      <a href="/scan" class="plan-btn plan-btn-outline">Get Started</a>
     </div>
     <div class="pricing-card popular">
       <div class="popular-badge">Most Popular</div>
@@ -1116,7 +1196,7 @@
         <li><span class="check">✓</span> Priority processing</li>
         <li><span class="check">✓</span> Client-ready report export</li>
       </ul>
-      <a href="hooklens-scanner.html" class="plan-btn plan-btn-filled">Get Started</a>
+      <a href="/scan" class="plan-btn plan-btn-filled">Get Started</a>
     </div>
     <div class="pricing-card">
       <div class="plan-name">Agency</div>
@@ -1131,7 +1211,7 @@
         <li><span class="check">✓</span> API access</li>
         <li><span class="check">✓</span> Dedicated support</li>
       </ul>
-      <a href="hooklens-scanner.html" class="plan-btn plan-btn-outline">Get Started</a>
+      <a href="/scan" class="plan-btn plan-btn-outline">Get Started</a>
     </div>
   </div>
   <div class="reveal" style="margin-top: 32px; display: flex; justify-content: center;">
@@ -1157,7 +1237,7 @@
         <div><span class="check">✓</span> Client-ready report export</div>
       </div>
       <div style="margin-top: 20px;">
-        <a href="hooklens-scanner.html" class="plan-btn plan-btn-filled" style="width:100%; text-align:center; display:block;">Get Yearly Pro — Save €188 →</a>
+        <a href="/scan" class="plan-btn plan-btn-filled" style="width:100%; text-align:center; display:block;">Get Yearly Pro — Save €188 →</a>
       </div>
     </div>
   </div>
@@ -1167,17 +1247,38 @@
 <div class="cta-section reveal">
   <h2 class="cta-title">Stop guessing.<br><span>Start knowing.</span></h2>
   <p class="cta-sub">Upload your first ad free. No credit card required.</p>
-  <a href="hooklens-scanner.html" class="btn-primary">Analyze Your First Ad Free →</a>
+  <a href="/scan" class="btn-primary">Analyze Your First Ad Free →</a>
 </div>
 
 <!-- FOOTER -->
+
+<!-- CONTACT -->
+<div class="contact-section reveal" id="contact">
+  <div class="section-label">Contact</div>
+  <h2 class="section-title" style="font-size:36px;">Got a question?</h2>
+  <p class="section-sub" style="margin-top:12px;">We read every message and reply within 24 hours.</p>
+  <div class="contact-form">
+    <div class="contact-field">
+      <label class="contact-label">Your Email</label>
+      <input class="contact-input" type="email" id="contactEmail" placeholder="your@email.com" />
+    </div>
+    <div class="contact-field">
+      <label class="contact-label">Message</label>
+      <textarea class="contact-input contact-textarea" id="contactMessage" placeholder="What's on your mind?"></textarea>
+    </div>
+    <button class="contact-btn" id="contactBtn" onclick="sendContact()">Send Message →</button>
+    <div class="contact-success" id="contactSuccess">✓ Message sent! We'll get back to you within 24 hours.</div>
+    <div class="contact-error" id="contactError">Something went wrong. Email us directly at hooklensquestions@gmail.com</div>
+  </div>
+</div>
+
 <footer>
   <div class="footer-logo">Hook<span>Lens</span></div>
   <div class="footer-copy">© 2025 HookLens. All rights reserved.</div>
   <ul class="footer-links">
     <li><a href="#">Privacy</a></li>
     <li><a href="#">Terms</a></li>
-    <li><a href="#">Contact</a></li>
+    <li><a href="#contact">Contact</a></li>
   </ul>
 </footer>
 
@@ -1192,6 +1293,53 @@
     });
   }, { threshold: 0.1 });
   reveals.forEach(el => observer.observe(el));
+
+  // Contact form via Formspree
+  async function sendContact() {
+    const email = document.getElementById('contactEmail').value.trim();
+    const message = document.getElementById('contactMessage').value.trim();
+    const btn = document.getElementById('contactBtn');
+    const success = document.getElementById('contactSuccess');
+    const error = document.getElementById('contactError');
+
+    if (!email || !email.includes('@')) { 
+      error.textContent = 'Please enter a valid email.';
+      error.style.display = 'block'; 
+      return; 
+    }
+    if (!message) { 
+      error.textContent = 'Please enter a message.';
+      error.style.display = 'block'; 
+      return; 
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Sending...';
+    error.style.display = 'none';
+
+    try {
+      const res = await fetch('https://hooklens-api.onrender.com/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({ email, message, _replyto: email })
+      });
+
+      if (res.ok) {
+        success.style.display = 'block';
+        btn.textContent = 'Sent ✓';
+        document.getElementById('contactEmail').value = '';
+        document.getElementById('contactMessage').value = '';
+      } else {
+        throw new Error('Failed');
+      }
+    } catch(e) {
+      error.textContent = 'Something went wrong. Email us at hooklensquestions@gmail.com';
+      error.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Send Message →';
+    }
+  }
+
 </script>
 </body>
 </html>
