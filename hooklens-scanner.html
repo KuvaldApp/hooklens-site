@@ -2033,11 +2033,25 @@ async function checkGate(email, skipOverlay = false) {
       body: JSON.stringify({ email })
     });
     const data = await res.json();
+
+    // IP already used free scan - show paywall directly
+    if (res.status === 403 && data.error === 'free_scan_used') {
+      document.getElementById('gateOverlay').classList.add('hidden');
+      showPaywall();
+      return data;
+    }
+
     currentEmail = email;
     userScansRemaining = data.scansRemaining;
     updateScanCounter(data);
     document.getElementById('gateOverlay').classList.add('hidden');
     if (skipOverlay) document.getElementById('paywallOverlay').classList.add('hidden');
+
+    // If no scans left, show paywall immediately
+    if (data.scansRemaining === 0 && data.plan === 'free') {
+      showPaywall();
+    }
+
     return data;
   } catch(e) {
     console.error('Gate check failed:', e);
