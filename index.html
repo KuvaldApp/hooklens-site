@@ -1483,11 +1483,33 @@ async function syncUserWithBackend(email) {
   }
 
   // ── NAV RENDERER ──
-  function renderNav(user) {
+function renderNav(user) {
     const navRight = document.getElementById('navRight');
     if (user) {
       const initial = (user.email || 'U')[0].toUpperCase();
+      const name = user.email.split('@')[0];
       navRight.innerHTML = `
         <a href="profile.html" class="nav-profile-btn">
           <div class="nav-avatar">${initial}</div>
-          <span>${user.email.s
+          <span>${name}</span>
+        </a>`;
+    } else {
+      navRight.innerHTML = `
+        <button class="nav-signin-btn" onclick="openAuth('login')">Sign In</button>
+        <a href="hooklens-scanner.html" class="nav-cta">Try Free →</a>`;
+    }
+  }
+
+  // ── INIT ──
+  (async () => {
+    await loadSupabase();
+    const client = getClient();
+    client.auth.onAuthStateChange((event, session) => {
+      renderNav(session?.user || null);
+    });
+    const user = await getUser();
+    renderNav(user);
+  })();
+</script>
+</body>
+</html>
