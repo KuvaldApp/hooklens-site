@@ -1798,7 +1798,17 @@ Respond ONLY with a valid JSON object in this exact structure (no markdown, no b
             email: currentEmail,
             video_name: videoFile.name,
             hook_score: result.overallScore,
-            summary: result.verdict || ''
+            summary: result.verdict || '',
+            scan_data: JSON.stringify({
+              scores: result.scores,
+              topFix: result.topFix,
+              hookAnalysis: result.hookAnalysis,
+              bodyAnalysis: result.bodyAnalysis,
+              ctaAnalysis: result.ctaAnalysis,
+              audioAnalysis: result.audioAnalysis,
+              geoFit: result.geoFit,
+              persona: result.persona
+            })
           });
         }
       } catch(e) { console.warn('Scan save failed:', e); }
@@ -2168,6 +2178,13 @@ async function goToCheckout() {
 window.addEventListener('DOMContentLoaded', async () => {
   await loadSupabase();
   const client = getClient();
+
+  // Show paywall if redirected from profile upgrade button
+  if (localStorage.getItem('hl_show_paywall') === '1') {
+    localStorage.removeItem('hl_show_paywall');
+    // Wait for session check then show paywall
+    setTimeout(() => showPaywall(), 800);
+  }
 
   // Handle payment success redirect
   const urlParams = new URLSearchParams(window.location.search);
