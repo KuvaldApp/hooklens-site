@@ -250,6 +250,71 @@
   }
   .auth-required h2 { font-size: 24px; font-weight: 800; margin-bottom: 12px; }
   .auth-required p { color: var(--muted); margin-bottom: 28px; font-size: 15px; font-weight: 300; }
+
+  /* EXPANDABLE SCAN ITEMS */
+  .scan-item {
+    cursor: pointer;
+    border-radius: 10px;
+    transition: background 0.2s;
+    padding: 16px;
+    margin: 0 -16px;
+  }
+  .scan-item:hover { background: rgba(255,255,255,0.03); }
+  .scan-item-header {
+    display: flex; align-items: center; gap: 16px;
+  }
+  .scan-chevron {
+    margin-left: auto;
+    color: var(--muted);
+    font-size: 12px;
+    transition: transform 0.25s;
+    flex-shrink: 0;
+  }
+  .scan-item.open .scan-chevron { transform: rotate(180deg); }
+  .scan-expand {
+    display: none;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+  }
+  .scan-item.open .scan-expand { display: block; }
+  .expand-scores {
+    display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 14px;
+  }
+  .expand-score-chip {
+    display: flex; flex-direction: column; align-items: center;
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 8px 14px; min-width: 64px;
+  }
+  .expand-score-chip .chip-val {
+    font-size: 18px; font-weight: 800; letter-spacing: -1px; line-height: 1;
+  }
+  .expand-score-chip .chip-label {
+    font-size: 10px; color: var(--muted); text-transform: uppercase;
+    letter-spacing: 0.06em; margin-top: 4px;
+  }
+  .expand-verdict {
+    font-size: 13px; color: var(--muted); line-height: 1.6;
+    margin-bottom: 12px; font-style: italic;
+  }
+  .expand-topfix {
+    background: rgba(0,229,255,0.05); border: 1px solid rgba(0,229,255,0.15);
+    border-radius: 8px; padding: 12px 14px;
+    font-size: 13px; color: var(--text); line-height: 1.6;
+  }
+  .expand-topfix-label {
+    font-size: 10px; font-weight: 700; color: var(--accent);
+    text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 5px;
+  }
+  .expand-geo { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+  .expand-geo-tag {
+    font-size: 11px; font-weight: 600; padding: 3px 10px;
+    border-radius: 5px; border: 1px solid;
+  }
+  .geo-s { background: rgba(0,255,157,0.08); color: var(--accent3); border-color: rgba(0,255,157,0.2); }
+  .geo-m { background: rgba(0,229,255,0.06); color: var(--accent); border-color: rgba(0,229,255,0.15); }
+  .geo-w { background: rgba(255,107,107,0.06); color: var(--danger); border-color: rgba(255,107,107,0.15); }
+
 </style>
 </head>
 <body>
@@ -415,17 +480,64 @@ async function syncUserWithBackend(email) {
       .order('created_at', { ascending: false })
       .limit(20);
 
+    function toggleScan(el) {
+      el.classList.toggle('open');
+    }
+
     const historyHTML = scans && scans.length > 0
-      ? scans.map(scan => `
-          <div class="scan-item">
-            <div class="scan-icon">🎬</div>
-            <div class="scan-info">
-              <div class="scan-name">${scan.video_name || 'Untitled scan'}</div>
-              <div class="scan-date">${formatDate(scan.created_at)}</div>
-            </div>
-            ${scan.hook_score ? `<div class="scan-score"><div class="score-pill ${scoreClass(scan.hook_score)}">${scan.hook_score}/100</div></div>` : ''}
-          </div>
-        `).join('')
+      ? scans.map((scan, idx) => {
+          let expandHTML = '';
+          if (scan.scan_data) {
+            try {
+              const d = JSON.parse(scan.scan_data);
+              const sc = d.scores || {};
+              const scoreItems = [
+                { label: 'Hook', val: sc.hook },
+                { label: 'Body', val: sc.body },
+                { label: 'CTA', val: sc.cta },
+                { label: 'Audio', val: sc.audio },
+                { label: 'Captions', val: sc.captions }
+              ].filter(s => s.val != null);
+
+              const chips = scoreItems.map(s => {
+                const cls = s.val >= 80 ? 'c-high' : s.val >= 60 ? 'c-mid' : s.val >= 40 ? 'c-low' : 'c-danger';
+                return `<div class="expand-score-chip"><div class="chip-val ${cls}">${s.val}</div><div class="chip-label">${s.label}</div></div>`;
+              }).join('');
+
+              const geo = d.geoFit ? `
+                <div style="margin-top:12px; font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:6px;">Geographic Fit</div>
+                <div class="expand-geo">
+                  ${(d.geoFit.strong||[]).map(g => `<span class="expand-geo-tag geo-s">✓ ${g}</span>`).join('')}
+                  ${(d.geoFit.moderate||[]).map(g => `<span class="expand-geo-tag geo-m">~ ${g}</span>`).join('')}
+                  ${(d.geoFit.weak||[]).map(g => `<span class="expand-geo-tag geo-w">✗ ${g}</span>`).join('')}
+                </div>` : '';
+
+              expandHTML = `
+                <div class="expand-scores">${chips}</div>
+                ${scan.summary ? `<div class="expand-verdict">"${scan.summary}"</div>` : ''}
+                ${d.topFix ? `<div class="expand-topfix"><div class="expand-topfix-label">⚡ #1 Fix</div>${d.topFix}</div>` : ''}
+                ${geo}`;
+            } catch(e) {
+              expandHTML = scan.summary ? `<div class="expand-verdict">"${scan.summary}"</div>` : '';
+            }
+          } else if (scan.summary) {
+            expandHTML = `<div class="expand-verdict">"${scan.summary}"</div>`;
+          }
+
+          return `
+            <div class="scan-item" onclick="toggleScan(this)" style="border-bottom: 1px solid var(--border); border-radius:0; margin:0; padding: 16px 0;">
+              <div class="scan-item-header">
+                <div class="scan-icon">🎬</div>
+                <div class="scan-info">
+                  <div class="scan-name">${scan.video_name || 'Untitled scan'}</div>
+                  <div class="scan-date">${formatDate(scan.created_at)}</div>
+                </div>
+                ${scan.hook_score ? `<div class="scan-score"><div class="score-pill ${scoreClass(scan.hook_score)}">${scan.hook_score}/100</div></div>` : ''}
+                <div class="scan-chevron">▼</div>
+              </div>
+              ${expandHTML ? `<div class="scan-expand">${expandHTML}</div>` : ''}
+            </div>`;
+        }).join('')
       : `<div class="history-empty">
           <div class="history-empty-icon">🎬</div>
           <div>No scans yet — your analysis history will appear here.</div>
@@ -471,7 +583,7 @@ async function syncUserWithBackend(email) {
             ? `<div class="cancel-text">To cancel or change your subscription, visit the billing portal.</div>
                <a href="${STRIPE_PORTAL}" target="_blank" class="cancel-btn">Manage Subscription →</a>`
             : `<div class="cancel-text">Upgrade to get more scans every month.</div>
-               <a href="hooklens-scanner.html" class="upgrade-btn">Upgrade Plan →</a>`
+               <a href="hooklens-scanner.html#paywall" class="upgrade-btn" onclick="localStorage.setItem('hl_show_paywall','1')">Upgrade Plan →</a>`
           }
         </div>
       </div>
