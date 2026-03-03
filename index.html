@@ -1306,17 +1306,16 @@
 <!-- FOOTER — unchanged from your original -->
 <footer>
   <div class="footer-logo">Hook<span>Lens</span></div>
-  <div class="footer-copy">© 2025 HookLens. All rights reserved. · <a href="mailto:hooklensquestions@gmail.com" style="color:var(--muted);text-decoration:none;">hooklensquestions@gmail.com</a></div>
+  <div class="footer-copy">© 2025 HookLens. All rights reserved. · <a href="/cdn-cgi/l/email-protection#7b13141410171e15080a0e1e080f121415083b1c161a121755181416" style="color:var(--muted);text-decoration:none;"><span class="__cf_email__" data-cfemail="e78f88888c8b82899496928294938e888994a7808a868e8bc984888a">[email&#160;protected]</span></a></div>
   <ul class="footer-links">
     <li><a href="#">Privacy</a></li>
     <li><a href="#">Terms</a></li>
-    <li><a href="mailto:hooklensquestions@gmail.com">Contact</a></li>
+    <li><a href="/cdn-cgi/l/email-protection#0a62656561666f64797b7f6f797e636564794a6d676b636624696567">Contact</a></li>
   </ul>
 </footer>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="auth.js"></script>
 <script>
-  // ── SCROLL REVEAL (your original) ──
+  // ── SCROLL REVEAL — runs independently, never blocked by auth ──
   const reveals = document.querySelectorAll('.reveal');
   const observer = new IntersectionObserver((entries) => {
     entries.forEach((entry, i) => {
@@ -1324,6 +1323,10 @@
     });
   }, { threshold: 0.1 });
   reveals.forEach(el => observer.observe(el));
+</script>
+
+<script src="auth.js"></script>
+<script>
 
   // ── AUTH MODAL ──
   let currentTab = 'signup';
@@ -1391,10 +1394,4 @@
       navRight.innerHTML = `
         <a href="profile.html" class="nav-profile-btn">
           <div class="nav-avatar">${initial}</div>
-          <span>${user.email.split('@')[0]}</span>
-        </a>
-        <a href="hooklens-scanner.html" class="nav-cta">Go to Scanner →</a>`;
-    } else {
-      navRight.innerHTML = `
-        <button class="nav-signin-btn" onclick="openAuth('login')">Sign In</button>
-        <a href="hooklens-scanner.html" class="nav-cta">Try Free →<
+          <span>${user.email.s
