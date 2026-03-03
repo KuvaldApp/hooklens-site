@@ -1,6 +1,5 @@
 // ── HookLens Auth Module ─────────────────────────────────
 // Shared across index.html, hooklens-scanner.html, profile.html
-
 const SUPABASE_URL = 'https://tvfmnfckawtvbmwfaxjv.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_KhnkmTKYGENhuuLpekLLwg_j2M2AHsK';
 const BACKEND = 'https://hooklens-api.onrender.com';
@@ -9,13 +8,18 @@ const STRIPE_PORTAL = 'https://billing.stripe.com/p/login/00w5kD7ZQd0b6VndY7aIM0
 // Load Supabase from CDN (called once per page)
 function loadSupabase() {
   return new Promise((resolve) => {
-    if (window.supabase) return resolve(window.supabase);
+    if (window._supabaseClient) return resolve(window._supabaseClient);
+    if (window.supabase) {
+      window._supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      return resolve(window._supabaseClient);
+    }
     const script = document.createElement('script');
     script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js';
     script.onload = () => {
       window._supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
       resolve(window._supabaseClient);
     };
+    script.onerror = () => resolve(null);
     document.head.appendChild(script);
   });
 }
@@ -38,6 +42,7 @@ async function getUser() {
 
 async function getProfile(userId) {
   const client = getClient();
+  if (!client) return null;
   const { data } = await client
     .from('profiles')
     .select('*')
@@ -48,9 +53,9 @@ async function getProfile(userId) {
 
 async function signOut() {
   const client = getClient();
-  await client.auth.signOut();
+  if (client) await client.auth.signOut();
   localStorage.removeItem('hl_email');
-  window.location.href = '/index.html';
+  window.location.href = 'index.html';
 }
 
 async function signInWithGoogle() {
