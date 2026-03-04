@@ -173,6 +173,22 @@
   .breakdown-issue { font-size: 12px; color: var(--danger); line-height: 1.5; padding-left: 4px; }
   .breakdown-improvements { display: flex; flex-direction: column; gap: 5px; }
   .breakdown-improvement { font-size: 12px; color: var(--accent3); line-height: 1.5; padding-left: 4px; }
+  .breakdown-fix { font-size: 12px; color: var(--accent); line-height: 1.6; margin-top: 6px; padding: 8px 10px; background: rgba(0,229,255,0.04); border-left: 2px solid rgba(0,229,255,0.3); border-radius: 0 6px 6px 0; }
+  .breakdown-fix-label { font-weight: 700; text-transform: uppercase; font-size: 10px; letter-spacing: 0.06em; margin-right: 4px; }
+
+  .persona-lines { display: flex; flex-direction: column; gap: 5px; margin-top: 8px; }
+  .persona-line { font-size: 12px; color: var(--text); line-height: 1.5; padding: 5px 10px; background: var(--bg2); border-radius: 6px; border: 1px solid var(--border); }
+
+  /* SCRIPT TABLE */
+  .script-table { display: flex; flex-direction: column; gap: 6px; }
+  .script-row { padding: 10px 12px; border-radius: 8px; border-left: 3px solid; background: var(--bg); }
+  .script-row-good { border-color: var(--accent3); }
+  .script-row-weak { border-color: #ffb347; }
+  .script-row-bad { border-color: var(--danger); }
+  .script-time { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
+  .script-original { font-size: 13px; color: var(--text); line-height: 1.5; }
+  .script-rewrite { font-size: 12px; color: var(--accent); margin-top: 5px; line-height: 1.5; padding: 5px 8px; background: rgba(0,229,255,0.04); border-radius: 4px; }
+  .script-issue-text { font-size: 11px; color: #ffb347; margin-top: 4px; }
 
   /* DOWNLOAD BUTTON */
   .expand-actions { display: flex; justify-content: flex-end; margin-top: 14px; }
@@ -362,10 +378,10 @@ async function syncUserWithBackend(email) {
           <div class="rc-section-label">Verdict</div>
           <div class="rc-verdict">"${scan.summary}"</div>
         </div>` : ''}
-      ${d.hookAnalysis?.analysis ? `<div class="rc-section"><div class="rc-section-label">Hook</div><div class="rc-section-text">${d.hookAnalysis.analysis}</div></div>` : ''}
-      ${d.bodyAnalysis?.analysis ? `<div class="rc-section"><div class="rc-section-label">Body</div><div class="rc-section-text">${d.bodyAnalysis.analysis}</div></div>` : ''}
-      ${d.ctaAnalysis?.analysis ? `<div class="rc-section"><div class="rc-section-label">CTA</div><div class="rc-section-text">${d.ctaAnalysis.analysis}</div></div>` : ''}
-      ${d.audioAnalysis?.analysis ? `<div class="rc-section"><div class="rc-section-label">Audio</div><div class="rc-section-text">${d.audioAnalysis.analysis}</div></div>` : ''}
+      ${d.hookAnalysis?.summary ? `<div class="rc-section"><div class="rc-section-label">Hook</div><div class="rc-section-text">${d.hookAnalysis.summary}</div>${d.hookAnalysis.fix ? `<div class="rc-section-text" style="color:#00e5ff;margin-top:4px">→ ${d.hookAnalysis.fix}</div>` : ''}</div>` : ''}
+      ${d.bodyAnalysis?.summary ? `<div class="rc-section"><div class="rc-section-label">Body</div><div class="rc-section-text">${d.bodyAnalysis.summary}</div>${d.bodyAnalysis.fix ? `<div class="rc-section-text" style="color:#00e5ff;margin-top:4px">→ ${d.bodyAnalysis.fix}</div>` : ''}</div>` : ''}
+      ${d.ctaAnalysis?.summary ? `<div class="rc-section"><div class="rc-section-label">CTA</div><div class="rc-section-text">${d.ctaAnalysis.summary}</div>${d.ctaAnalysis.fix ? `<div class="rc-section-text" style="color:#00e5ff;margin-top:4px">→ ${d.ctaAnalysis.fix}</div>` : ''}</div>` : ''}
+      ${d.audioAnalysis?.summary ? `<div class="rc-section"><div class="rc-section-label">Audio</div><div class="rc-section-text">${d.audioAnalysis.summary}</div>${d.audioAnalysis.fix ? `<div class="rc-section-text" style="color:#00e5ff;margin-top:4px">→ ${d.audioAnalysis.fix}</div>` : ''}</div>` : ''}
       ${d.topFix ? `
         <div class="rc-section">
           <div class="rc-section-label">⚡ #1 Priority Fix</div>
@@ -466,9 +482,8 @@ async function syncUserWithBackend(email) {
           function analysisBlock(label, score, obj) {
             if (!obj) return '';
             const lines = [];
-            if (obj.analysis) lines.push(`<div class="breakdown-text">${obj.analysis}</div>`);
-            if (obj.issues && obj.issues.length) lines.push(`<div class="breakdown-issues">${obj.issues.map(i=>`<div class="breakdown-issue">⚠ ${i}</div>`).join('')}</div>`);
-            if (obj.improvements && obj.improvements.length) lines.push(`<div class="breakdown-improvements">${obj.improvements.map(i=>`<div class="breakdown-improvement">→ ${i}</div>`).join('')}</div>`);
+            if (obj.summary) lines.push(`<div class="breakdown-text">${obj.summary}</div>`);
+            if (obj.fix) lines.push(`<div class="breakdown-fix"><span class="breakdown-fix-label">→ Fix</span> ${obj.fix}</div>`);
             if (!lines.length) return '';
             const cls = score != null ? chipClass(score) : '';
             return `<div class="breakdown-section">
@@ -487,6 +502,32 @@ async function syncUserWithBackend(email) {
             analysisBlock('Audio', sc.audio, d.audioAnalysis),
           ].filter(Boolean).join('');
 
+          // Caption / Script analysis
+          let captionBlock = '';
+          if (d.captionAnalysis) {
+            const ca = d.captionAnalysis;
+            const cls = ca.score != null ? chipClass(ca.score) : '';
+            const scriptRows = (ca.scriptLines || []).map(line => {
+              const rowCls = line.quality === 'good' ? 'script-row-good' : line.quality === 'weak' ? 'script-row-weak' : 'script-row-bad';
+              return `<div class="script-row ${rowCls}">
+                <div class="script-time">${line.time || ''}</div>
+                <div class="script-original">${line.original || ''}</div>
+                ${line.rewrite ? `<div class="script-rewrite">→ ${line.rewrite}</div>` : ''}
+                ${line.issue ? `<div class="script-issue-text">⚠ ${line.issue}</div>` : ''}
+              </div>`;
+            }).join('');
+            captionBlock = `<div class="breakdown-section">
+              <div class="breakdown-header">
+                <span class="breakdown-label">Captions / Script</span>
+                ${ca.score != null ? `<span class="breakdown-score ${cls}">${ca.score}</span>` : ''}
+              </div>
+              ${ca.summary ? `<div class="breakdown-text">${ca.summary}</div>` : ''}
+              ${ca.arcAnalysis ? `<div class="breakdown-text" style="margin-top:8px;color:var(--muted);font-style:italic">${ca.arcAnalysis}</div>` : ''}
+              ${ca.fix ? `<div class="breakdown-fix"><span class="breakdown-fix-label">→ Fix</span> ${ca.fix}</div>` : ''}
+              ${scriptRows ? `<div class="script-table" style="margin-top:14px">${scriptRows}</div>` : ''}
+            </div>`;
+          }
+
           const geoBlock = d.geoFit ? `
             <div class="expand-geo-label">Geographic Fit</div>
             <div class="expand-geo">
@@ -495,16 +536,26 @@ async function syncUserWithBackend(email) {
               ${(d.geoFit.weak||[]).map(g=>`<span class="expand-geo-tag geo-w">✗ ${g}</span>`).join('')}
             </div>` : '';
 
-          const personaBlock = d.persona ? `
-            <div class="expand-geo-label" style="margin-top:16px">Target Persona</div>
-            <div class="breakdown-text" style="margin-top:6px">${typeof d.persona === 'string' ? d.persona : JSON.stringify(d.persona)}</div>` : '';
+          const personaBlock = d.persona ? (() => {
+            const p = typeof d.persona === 'string' ? (() => { try { return JSON.parse(d.persona); } catch(e) { return null; } })() : d.persona;
+            if (!p) return '';
+            const lines = [
+              p.age ? `Age: ${p.age}` : '',
+              p.gender ? `Gender: ${p.gender}` : '',
+              p.income ? `Income: ${p.income}` : '',
+              p.intent ? `Intent: ${p.intent}` : '',
+              p.psychographic ? `Profile: ${p.psychographic}` : ''
+            ].filter(Boolean);
+            return `<div class="expand-geo-label" style="margin-top:16px">Target Persona</div>
+              <div class="persona-lines">${lines.map(l => `<div class="persona-line">${l}</div>`).join('')}</div>`;
+          })() : '';
 
           hasExpand = true;
           expandHTML = `
             ${chips ? `<div class="expand-scores">${chips}</div>` : ''}
             ${scan.summary ? `<div class="expand-verdict">"${scan.summary}"</div>` : ''}
             ${d.topFix ? `<div class="expand-topfix"><div class="expand-topfix-label">⚡ #1 Fix</div>${d.topFix}</div>` : ''}
-            ${breakdowns ? `<div class="breakdowns-wrap">${breakdowns}</div>` : ''}
+            ${breakdowns ? `<div class="breakdowns-wrap">${breakdowns}${captionBlock}</div>` : (captionBlock ? `<div class="breakdowns-wrap">${captionBlock}</div>` : '')}
             ${geoBlock}
             ${personaBlock}
             <div class="expand-actions">
