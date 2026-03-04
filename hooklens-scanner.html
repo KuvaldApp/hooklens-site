@@ -2199,6 +2199,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     currentEmail = session.user.email;
     document.getElementById('gateOverlay').classList.add('hidden');
     renderScannerNav(session.user);
+    await syncUserWithBackend(currentEmail);
     await checkScanStatus(currentEmail);
   }
 
