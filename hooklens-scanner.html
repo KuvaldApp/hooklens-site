@@ -1786,27 +1786,30 @@ Respond ONLY with a valid JSON object in this exact structure (no markdown, no b
     setProgress(100, 'Done!', '', 4);
     await new Promise(r => setTimeout(r, 300));
 
-    // Save scan to Supabase
+    // Save scan via backend (service role — bypasses RLS)
     if (currentEmail) {
       try {
         const user = await getUser();
         if (user) {
-          const client = getClient();
-          await client.from('scans').insert({
-            user_id: user.id,
-            email: currentEmail,
-            video_name: videoFile.name,
-            hook_score: result.overallScore,
-            summary: result.verdict || '',
-            scan_data: JSON.stringify({
-              scores: result.scores,
-              topFix: result.topFix,
-              hookAnalysis: result.hookAnalysis,
-              bodyAnalysis: result.bodyAnalysis,
-              ctaAnalysis: result.ctaAnalysis,
-              audioAnalysis: result.audioAnalysis,
-              geoFit: result.geoFit,
-              persona: result.persona
+          await fetch(BACKEND + '/save-scan', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              user_id: user.id,
+              email: currentEmail,
+              video_name: videoFile.name,
+              hook_score: result.overallScore,
+              summary: result.verdict || '',
+              scan_data: JSON.stringify({
+                scores: result.scores,
+                topFix: result.topFix,
+                hookAnalysis: result.hookAnalysis,
+                bodyAnalysis: result.bodyAnalysis,
+                ctaAnalysis: result.ctaAnalysis,
+                audioAnalysis: result.audioAnalysis,
+                geoFit: result.geoFit,
+                persona: result.persona
+              })
             })
           });
         }
