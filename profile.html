@@ -210,57 +210,136 @@
   .auth-required h2 { font-size: 24px; font-weight: 800; margin-bottom: 12px; }
   .auth-required p { color: var(--muted); margin-bottom: 28px; font-size: 15px; font-weight: 300; }
 
-  /* REPORT CARD — used for PNG export, hidden off-screen */
+  /* REPORT CARD — PNG export */
   .report-card {
     position: fixed; left: -9999px; top: 0;
-    width: 680px;
-    background: #080a0f;
-    border: 1px solid rgba(0,229,255,0.15);
-    border-radius: 20px;
-    padding: 40px 44px;
+    width: 700px;
+    background: #07090e;
+    border-radius: 0;
+    padding: 0;
     font-family: 'Plus Jakarta Sans', sans-serif;
     color: #e8eaf0;
+    overflow: hidden;
   }
-  .report-card .rc-logo { font-size: 15px; font-weight: 800; color: #e8eaf0; margin-bottom: 28px; letter-spacing: -0.3px; }
+  /* Accent bar at top */
+  .report-card::before {
+    content: ''; display: block; height: 4px;
+    background: linear-gradient(90deg, #7b61ff 0%, #00e5ff 50%, #00ff9d 100%);
+  }
+  .report-card .rc-inner { padding: 36px 44px 40px; }
+
+  /* Header */
+  .report-card .rc-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 28px; }
+  .report-card .rc-logo { font-size: 14px; font-weight: 800; color: #e8eaf0; letter-spacing: -0.3px; }
   .report-card .rc-logo span { color: #00e5ff; }
-  .report-card .rc-title { font-size: 20px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 3px; line-height: 1.3; }
-  .report-card .rc-date { font-size: 12px; color: #6b7280; margin-bottom: 24px; }
+  .report-card .rc-meta { text-align: right; }
+  .report-card .rc-title { font-size: 22px; font-weight: 800; letter-spacing: -0.8px; line-height: 1.25; margin-bottom: 4px; color: #ffffff; }
+  .report-card .rc-date { font-size: 11px; color: #4b5563; text-transform: uppercase; letter-spacing: 0.08em; }
 
-  .report-card .rc-score-row { display: flex; align-items: center; gap: 24px; margin-bottom: 24px; padding: 20px 24px; background: #0d1018; border-radius: 12px; border: 1px solid rgba(255,255,255,0.06); }
-  .report-card .rc-total-wrap { flex-shrink: 0; }
-  .report-card .rc-total { font-size: 56px; font-weight: 800; letter-spacing: -3px; line-height: 1; }
-  .report-card .rc-total-label { font-size: 11px; color: #6b7280; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.06em; }
-  .report-card .rc-chips-inline { display: flex; flex-wrap: wrap; gap: 8px; }
-  .report-card .rc-chip { display: flex; flex-direction: column; align-items: center; background: #111520; border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 8px 14px; min-width: 68px; }
-  .report-card .rc-chip .cv { font-size: 20px; font-weight: 800; letter-spacing: -1px; line-height: 1; }
-  .report-card .rc-chip .cl { font-size: 9px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.07em; margin-top: 4px; }
+  /* Score banner */
+  .report-card .rc-score-banner {
+    display: flex; align-items: center; gap: 0;
+    background: #0d1118; border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.07);
+    margin-bottom: 24px; overflow: hidden;
+  }
+  .report-card .rc-overall {
+    padding: 20px 28px; border-right: 1px solid rgba(255,255,255,0.07);
+    flex-shrink: 0;
+  }
+  .report-card .rc-overall-num { font-size: 52px; font-weight: 800; letter-spacing: -3px; line-height: 1; }
+  .report-card .rc-overall-label { font-size: 9px; color: #4b5563; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 3px; }
+  .report-card .rc-sub-scores { display: flex; flex: 1; }
+  .report-card .rc-sub { flex: 1; padding: 16px 0; text-align: center; border-right: 1px solid rgba(255,255,255,0.05); }
+  .report-card .rc-sub:last-child { border-right: none; }
+  .report-card .rc-sub-num { font-size: 22px; font-weight: 800; letter-spacing: -1px; line-height: 1; }
+  .report-card .rc-sub-label { font-size: 8px; color: #4b5563; text-transform: uppercase; letter-spacing: 0.07em; margin-top: 4px; }
 
-  .report-card .rc-verdict-block { font-size: 13px; color: #9ca3af; font-style: italic; line-height: 1.7; margin-bottom: 20px; padding: 14px 18px; border-left: 3px solid rgba(0,229,255,0.3); background: rgba(0,229,255,0.03); border-radius: 0 8px 8px 0; }
+  /* Verdict */
+  .report-card .rc-verdict-wrap {
+    padding: 16px 20px; margin-bottom: 24px;
+    background: rgba(255,255,255,0.02);
+    border-left: 3px solid #7b61ff;
+    border-radius: 0 8px 8px 0;
+  }
+  .report-card .rc-verdict-text { font-size: 13px; color: #9ca3af; font-style: italic; line-height: 1.65; }
 
-  .report-card .rc-topfix-block { margin-bottom: 24px; }
-  .report-card .rc-topfix-label { font-size: 10px; font-weight: 700; color: #00e5ff; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
-  .report-card .rc-topfix { font-size: 13px; color: #e8eaf0; line-height: 1.6; padding: 14px 16px; background: rgba(0,229,255,0.05); border: 1px solid rgba(0,229,255,0.15); border-radius: 8px; }
+  /* Top fix */
+  .report-card .rc-topfix-wrap { margin-bottom: 28px; }
+  .report-card .rc-topfix-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(0,229,255,0.08); border: 1px solid rgba(0,229,255,0.2);
+    border-radius: 20px; padding: 4px 12px; margin-bottom: 10px;
+    font-size: 9px; font-weight: 700; color: #00e5ff;
+    text-transform: uppercase; letter-spacing: 0.1em;
+  }
+  .report-card .rc-topfix-body {
+    font-size: 13px; color: #e8eaf0; line-height: 1.65;
+    padding: 14px 18px;
+    background: rgba(0,229,255,0.04);
+    border: 1px solid rgba(0,229,255,0.12);
+    border-radius: 10px;
+  }
 
-  .report-card .rc-analysis-block { margin-bottom: 18px; padding-bottom: 18px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-  .report-card .rc-analysis-block:last-of-type { border-bottom: none; }
-  .report-card .rc-analysis-label { font-size: 10px; font-weight: 700; color: #00e5ff; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px; }
-  .report-card .rc-analysis-text { font-size: 12px; color: #d1d5db; line-height: 1.6; }
-  .report-card .rc-analysis-fix { font-size: 12px; color: #00e5ff; line-height: 1.6; margin-top: 6px; padding: 7px 10px; background: rgba(0,229,255,0.05); border-left: 2px solid rgba(0,229,255,0.3); border-radius: 0 5px 5px 0; }
+  /* Section divider */
+  .report-card .rc-divider { height: 1px; background: rgba(255,255,255,0.05); margin: 20px 0; }
 
-  .report-card .rc-script-table { margin-top: 12px; display: flex; flex-direction: column; gap: 5px; }
-  .report-card .rc-script-row { padding: 8px 12px; border-radius: 6px; border-left: 3px solid; background: #0d1018; }
+  /* Analysis sections */
+  .report-card .rc-section-wrap { margin-bottom: 18px; }
+  .report-card .rc-section-head {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 8px;
+  }
+  .report-card .rc-section-tag {
+    font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;
+    padding: 3px 9px; border-radius: 4px; flex-shrink: 0;
+  }
+  .report-card .rc-tag-hook { background: rgba(123,97,255,0.15); color: #a78bff; }
+  .report-card .rc-tag-body { background: rgba(0,229,255,0.1); color: #00e5ff; }
+  .report-card .rc-tag-cta  { background: rgba(255,107,107,0.12); color: #ff8080; }
+  .report-card .rc-tag-audio{ background: rgba(0,255,157,0.1); color: #00ff9d; }
+  .report-card .rc-tag-captions { background: rgba(255,179,71,0.12); color: #ffb347; }
+  .report-card .rc-section-score { font-size: 13px; font-weight: 800; margin-left: auto; }
+  .report-card .rc-analysis-summary { font-size: 12px; color: #9ca3af; line-height: 1.6; margin-bottom: 7px; }
+  .report-card .rc-analysis-fix {
+    font-size: 11px; color: #c4f0ff; line-height: 1.55;
+    padding: 7px 11px; background: rgba(0,229,255,0.05);
+    border-left: 2px solid rgba(0,229,255,0.25); border-radius: 0 5px 5px 0;
+  }
+
+  /* Script table */
+  .report-card .rc-arc { font-size: 11px; color: #6b7280; font-style: italic; line-height: 1.5; margin-bottom: 10px; }
+  .report-card .rc-script-table { display: flex; flex-direction: column; gap: 4px; margin-top: 10px; }
+  .report-card .rc-script-row {
+    display: grid; grid-template-columns: 72px 1fr;
+    gap: 10px; padding: 9px 12px;
+    border-radius: 7px; border-left: 3px solid;
+    background: #0d1118;
+  }
   .report-card .rc-script-good { border-color: #00ff9d; }
   .report-card .rc-script-weak { border-color: #ffb347; }
-  .report-card .rc-script-bad { border-color: #ff6b6b; }
-  .report-card .rc-script-time { font-size: 9px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 3px; }
-  .report-card .rc-script-original { font-size: 12px; color: #e8eaf0; line-height: 1.4; }
-  .report-card .rc-script-issue { font-size: 11px; color: #ffb347; margin-top: 4px; }
-  .report-card .rc-script-rewrite { font-size: 11px; color: #00e5ff; margin-top: 4px; }
+  .report-card .rc-script-bad  { border-color: #ff6b6b; }
+  .report-card .rc-script-time { font-size: 9px; font-weight: 700; color: #4b5563; text-transform: uppercase; letter-spacing: 0.05em; padding-top: 2px; }
+  .report-card .rc-script-content {}
+  .report-card .rc-script-original { font-size: 11px; color: #d1d5db; line-height: 1.45; }
+  .report-card .rc-script-issue { font-size: 10px; color: #ffb347; margin-top: 4px; line-height: 1.4; }
+  .report-card .rc-script-rewrite { font-size: 10px; color: #00e5ff; margin-top: 4px; line-height: 1.4; padding: 3px 7px; background: rgba(0,229,255,0.06); border-radius: 3px; display: inline-block; }
 
-  .report-card .rc-geo { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
-  .report-card .rc-geo-label { font-size: 10px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px; margin-top: 18px; }
-  .report-card .rc-geo-tag { font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 5px; border: 1px solid; }
-  .report-card .rc-footer { margin-top: 28px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.06); font-size: 11px; color: #6b7280; }
+  /* Geo */
+  .report-card .rc-geo-wrap { margin-top: 24px; }
+  .report-card .rc-geo-heading { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #4b5563; margin-bottom: 8px; }
+  .report-card .rc-geo-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .report-card .rc-geo-tag { font-size: 10px; font-weight: 600; padding: 4px 10px; border-radius: 5px; border: 1px solid; }
+
+  /* Footer */
+  .report-card .rc-footer {
+    margin-top: 28px; padding: 14px 44px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    display: flex; justify-content: space-between; align-items: center;
+    background: #0a0c12;
+  }
+  .report-card .rc-footer-logo { font-size: 12px; font-weight: 800; color: #e8eaf0; }
+  .report-card .rc-footer-logo span { color: #00e5ff; }
+  .report-card .rc-footer-url { font-size: 10px; color: #4b5563; }
 </style>
 </head>
 <body>
@@ -362,6 +441,7 @@ async function syncUserWithBackend(email) {
 
     let d = {};
     try { d = scan.scan_data ? JSON.parse(scan.scan_data) : {}; } catch(e) {}
+    if (!d.scores && scan.hook_score) d.scores = { hook: scan.hook_score };
     const sc = d.scores || {};
     const scoreItems = [
       { label: 'Hook', val: sc.hook }, { label: 'Body', val: sc.body },
@@ -381,54 +461,108 @@ async function syncUserWithBackend(email) {
 
     const rc = document.getElementById('reportCard');
     rc.innerHTML = `
+  <div class="rc-inner">
+    <div class="rc-header">
       <div class="rc-logo">Hook<span>Lens</span></div>
-
-      <div class="rc-title">${scan.video_name || 'Untitled Scan'}</div>
-      <div class="rc-date">Analyzed ${formatDate(scan.created_at)}</div>
-
-      <div class="rc-score-row">
-        ${totalScore ? `<div class="rc-total-wrap"><div class="rc-total" style="color:${scoreColor(totalScore)}">${totalScore}</div><div class="rc-total-label">Overall Score</div></div>` : ''}
-        ${scoreItems.length ? `<div class="rc-chips-inline">${scoreItems.map(s => `<div class="rc-chip"><div class="cv" style="color:${scoreColor(s.val)}">${s.val}</div><div class="cl">${s.label}</div></div>`).join('')}</div>` : ''}
+      <div class="rc-meta">
+        <div style="font-size:10px;color:#4b5563;text-transform:uppercase;letter-spacing:0.08em">Ad Analysis Report</div>
       </div>
+    </div>
 
-      ${scan.summary ? `<div class="rc-verdict-block">"${scan.summary}"</div>` : ''}
+    <div class="rc-title">${scan.video_name || 'Untitled Scan'}</div>
+    <div class="rc-date">Analyzed ${formatDate(scan.created_at)}</div>
 
-      ${d.topFix ? `<div class="rc-topfix-block"><div class="rc-topfix-label">⚡ #1 Priority Fix</div><div class="rc-topfix">${d.topFix}</div></div>` : ''}
+    <div style="height:20px"></div>
 
-      ${[
-        {label:'Hook', a: d.hookAnalysis},
-        {label:'Body', a: d.bodyAnalysis},
-        {label:'CTA',  a: d.ctaAnalysis},
-        {label:'Audio',a: d.audioAnalysis}
-      ].filter(x=>x.a?.summary).map(x=>`
-        <div class="rc-analysis-block">
-          <div class="rc-analysis-label">${x.label}</div>
-          <div class="rc-analysis-text">${x.a.summary}</div>
-          ${x.a.fix ? `<div class="rc-analysis-fix">→ ${x.a.fix}</div>` : ''}
-        </div>`).join('')}
+    <!-- Score banner -->
+    <div class="rc-score-banner">
+      ${totalScore ? `
+        <div class="rc-overall">
+          <div class="rc-overall-num" style="color:${scoreColor(totalScore)}">${totalScore}</div>
+          <div class="rc-overall-label">Overall Score</div>
+        </div>` : ''}
+      <div class="rc-sub-scores">
+        ${scoreItems.map(s => `
+          <div class="rc-sub">
+            <div class="rc-sub-num" style="color:${scoreColor(s.val)}">${s.val}</div>
+            <div class="rc-sub-label">${s.label}</div>
+          </div>`).join('')}
+      </div>
+    </div>
 
-      ${d.captionAnalysis ? `
-        <div class="rc-analysis-block">
-          <div class="rc-analysis-label">Captions / Script</div>
-          ${d.captionAnalysis.summary ? `<div class="rc-analysis-text">${d.captionAnalysis.summary}</div>` : ''}
-          ${d.captionAnalysis.arcAnalysis ? `<div class="rc-analysis-text" style="color:#6b7280;font-style:italic;margin-top:4px">${d.captionAnalysis.arcAnalysis}</div>` : ''}
-          ${d.captionAnalysis.fix ? `<div class="rc-analysis-fix">→ ${d.captionAnalysis.fix}</div>` : ''}
-          ${(d.captionAnalysis.scriptLines||[]).length ? `
-            <div class="rc-script-table">
-              ${d.captionAnalysis.scriptLines.map(line=>`
-                <div class="rc-script-row rc-script-${line.quality||'good'}">
-                  <div class="rc-script-time">${line.time||''}</div>
+    <!-- Verdict -->
+    ${scan.summary ? `
+      <div class="rc-verdict-wrap">
+        <div class="rc-verdict-text">"${scan.summary}"</div>
+      </div>` : ''}
+
+    <!-- #1 Fix -->
+    ${d.topFix ? `
+      <div class="rc-topfix-wrap">
+        <div class="rc-topfix-pill">⚡ #1 Priority Fix</div>
+        <div class="rc-topfix-body">${d.topFix}</div>
+      </div>` : ''}
+
+    <div class="rc-divider"></div>
+
+    <!-- Section analyses -->
+    ${[
+      {label:'Hook',     tag:'hook',     score: d.scores?.hook,     a: d.hookAnalysis},
+      {label:'Body',     tag:'body',     score: d.scores?.body,     a: d.bodyAnalysis},
+      {label:'CTA',      tag:'cta',      score: d.scores?.cta,      a: d.ctaAnalysis},
+      {label:'Audio',    tag:'audio',    score: d.scores?.audio,    a: d.audioAnalysis},
+    ].filter(x => x.a?.summary).map(x => `
+      <div class="rc-section-wrap">
+        <div class="rc-section-head">
+          <span class="rc-section-tag rc-tag-${x.tag}">${x.label}</span>
+          ${x.score != null ? `<span class="rc-section-score" style="color:${scoreColor(x.score)}">${x.score}/100</span>` : ''}
+        </div>
+        <div class="rc-analysis-summary">${x.a.summary}</div>
+        ${x.a.fix ? `<div class="rc-analysis-fix">→ ${x.a.fix}</div>` : ''}
+      </div>`).join('')}
+
+    <!-- Captions / Script -->
+    ${d.captionAnalysis ? `
+      <div class="rc-section-wrap">
+        <div class="rc-section-head">
+          <span class="rc-section-tag rc-tag-captions">Captions / Script</span>
+          ${d.captionAnalysis.score != null ? `<span class="rc-section-score" style="color:${scoreColor(d.captionAnalysis.score)}">${d.captionAnalysis.score}/100</span>` : ''}
+        </div>
+        ${d.captionAnalysis.summary ? `<div class="rc-analysis-summary">${d.captionAnalysis.summary}</div>` : ''}
+        ${d.captionAnalysis.arcAnalysis ? `<div class="rc-arc">${d.captionAnalysis.arcAnalysis}</div>` : ''}
+        ${d.captionAnalysis.fix ? `<div class="rc-analysis-fix">→ ${d.captionAnalysis.fix}</div>` : ''}
+        ${(d.captionAnalysis.scriptLines||[]).length ? `
+          <div class="rc-script-table">
+            ${d.captionAnalysis.scriptLines.map(line => `
+              <div class="rc-script-row rc-script-${line.quality||'good'}">
+                <div class="rc-script-time">${line.time||''}</div>
+                <div class="rc-script-content">
                   <div class="rc-script-original">${line.original||''}</div>
                   ${line.issue ? `<div class="rc-script-issue">⚠ ${line.issue}</div>` : ''}
-                  ${line.rewrite ? `<div class="rc-script-rewrite">→ ${line.rewrite}</div>` : ''}
-                </div>`).join('')}
-            </div>` : ''}
-        </div>` : ''}
+                  ${line.rewrite ? `<span class="rc-script-rewrite">→ ${line.rewrite}</span>` : ''}
+                </div>
+              </div>`).join('')}
+          </div>` : ''}
+      </div>` : ''}
 
-      ${geoHTML}
+    <!-- Geo fit -->
+    ${d.geoFit ? `
+      <div class="rc-divider"></div>
+      <div class="rc-geo-wrap">
+        <div class="rc-geo-heading">Geographic Fit</div>
+        <div class="rc-geo-tags">
+          ${(d.geoFit.strong||[]).map(g=>`<span class="rc-geo-tag" style="background:rgba(0,255,157,0.08);color:#00ff9d;border-color:rgba(0,255,157,0.25)">✓ ${g}</span>`).join('')}
+          ${(d.geoFit.moderate||[]).map(g=>`<span class="rc-geo-tag" style="background:rgba(0,229,255,0.06);color:#00e5ff;border-color:rgba(0,229,255,0.2)">~ ${g}</span>`).join('')}
+          ${(d.geoFit.weak||[]).map(g=>`<span class="rc-geo-tag" style="background:rgba(255,107,107,0.06);color:#ff6b6b;border-color:rgba(255,107,107,0.2)">✗ ${g}</span>`).join('')}
+        </div>
+      </div>` : ''}
+  </div>
 
-      <div class="rc-footer">Generated by HookLens · hooklens.net</div>
-    `;
+  <div class="rc-footer">
+    <div class="rc-footer-logo">Hook<span>Lens</span></div>
+    <div class="rc-footer-url">hooklens.net</div>
+  </div>
+`;
 
     // Load html2canvas if not already loaded
     if (!window.html2canvas) {
