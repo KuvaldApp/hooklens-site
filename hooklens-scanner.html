@@ -1545,17 +1545,16 @@ function audioBufferToWav(buffer) {
 }
 
 async function startAnalysis() {
+  // Check scan availability BEFORE starting (don't decrement yet)
   if (currentEmail) {
     try {
-      const res = await fetch(BACKEND + '/use-scan', {
+      const checkRes = await fetch(BACKEND + '/gate', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: currentEmail })
       });
-      const data = await res.json();
-      if (res.status === 403 || data.needsUpgrade) { showPaywall(); return; }
-      userScansRemaining = data.scansRemaining;
-      updateScanCounter({ plan: data.plan || 'free', scansRemaining: data.scansRemaining, scansLimit: 1 });
-    } catch(e) { console.warn('Scan count error:', e); }
+      const checkData = await checkRes.json();
+      if (checkData.scansRemaining <= 0) { showPaywall(); return; }
+    } catch(e) { console.warn('Scan check error:', e); }
   }
   if (!videoFile) { showError('Please upload a video first.'); return; }
   if (!videoElement) { showError('Video is still loading, please wait a moment and try again.'); return; }
@@ -1814,7 +1813,26 @@ Respond ONLY with a valid JSON object in this exact structure (no markdown, no b
       } catch(e) { console.warn('Scan save failed:', e); }
     }
 
+    // Decrement scan count after analysis succeeded
+    let scansRemaining = 0;
+    if (currentEmail) {
+      try {
+        const useRes = await fetch(BACKEND + '/use-scan', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: currentEmail })
+        });
+        const useData = await useRes.json();
+        scansRemaining = useData.scansRemaining ?? 0;
+        updateScanCounter({ plan: useData.plan || 'free', scansRemaining: useData.scansRemaining, scansLimit: useData.scansLimit || 1 });
+      } catch(e) { console.warn('Scan count error:', e); }
+    }
+
     renderResults(result, { platform, targetMarket, productDesc, duration, adObjective, adAngle });
+
+    // Show paywall AFTER results are visible if no scans left
+    if (scansRemaining <= 0) {
+      setTimeout(() => showPaywall(), 2500);
+    }
 
   } catch (err) {
     document.getElementById('progressWrap').classList.remove('show');
