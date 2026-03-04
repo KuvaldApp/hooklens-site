@@ -162,6 +162,18 @@
   .geo-m { background: rgba(0,229,255,0.06); color: var(--accent); border-color: rgba(0,229,255,0.15); }
   .geo-w { background: rgba(255,107,107,0.06); color: var(--danger); border-color: rgba(255,107,107,0.15); }
 
+  /* FULL BREAKDOWN SECTIONS */
+  .breakdowns-wrap { margin-top: 16px; display: flex; flex-direction: column; gap: 12px; }
+  .breakdown-section { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+  .breakdown-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .breakdown-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); }
+  .breakdown-score { font-size: 14px; font-weight: 800; padding: 2px 8px; border-radius: 5px; background: var(--surface2); }
+  .breakdown-text { font-size: 13px; color: var(--text); line-height: 1.6; margin-bottom: 8px; }
+  .breakdown-issues { display: flex; flex-direction: column; gap: 5px; margin-bottom: 8px; }
+  .breakdown-issue { font-size: 12px; color: var(--danger); line-height: 1.5; padding-left: 4px; }
+  .breakdown-improvements { display: flex; flex-direction: column; gap: 5px; }
+  .breakdown-improvement { font-size: 12px; color: var(--accent3); line-height: 1.5; padding-left: 4px; }
+
   /* DOWNLOAD BUTTON */
   .expand-actions { display: flex; justify-content: flex-end; margin-top: 14px; }
   .download-btn {
@@ -350,6 +362,10 @@ async function syncUserWithBackend(email) {
           <div class="rc-section-label">Verdict</div>
           <div class="rc-verdict">"${scan.summary}"</div>
         </div>` : ''}
+      ${d.hookAnalysis?.analysis ? `<div class="rc-section"><div class="rc-section-label">Hook</div><div class="rc-section-text">${d.hookAnalysis.analysis}</div></div>` : ''}
+      ${d.bodyAnalysis?.analysis ? `<div class="rc-section"><div class="rc-section-label">Body</div><div class="rc-section-text">${d.bodyAnalysis.analysis}</div></div>` : ''}
+      ${d.ctaAnalysis?.analysis ? `<div class="rc-section"><div class="rc-section-label">CTA</div><div class="rc-section-text">${d.ctaAnalysis.analysis}</div></div>` : ''}
+      ${d.audioAnalysis?.analysis ? `<div class="rc-section"><div class="rc-section-label">Audio</div><div class="rc-section-text">${d.audioAnalysis.analysis}</div></div>` : ''}
       ${d.topFix ? `
         <div class="rc-section">
           <div class="rc-section-label">⚡ #1 Priority Fix</div>
@@ -446,6 +462,31 @@ async function syncUserWithBackend(email) {
               <div class="chip-label">${s.label}</div>
             </div>`).join('');
 
+          // Full section breakdowns
+          function analysisBlock(label, score, obj) {
+            if (!obj) return '';
+            const lines = [];
+            if (obj.analysis) lines.push(`<div class="breakdown-text">${obj.analysis}</div>`);
+            if (obj.issues && obj.issues.length) lines.push(`<div class="breakdown-issues">${obj.issues.map(i=>`<div class="breakdown-issue">⚠ ${i}</div>`).join('')}</div>`);
+            if (obj.improvements && obj.improvements.length) lines.push(`<div class="breakdown-improvements">${obj.improvements.map(i=>`<div class="breakdown-improvement">→ ${i}</div>`).join('')}</div>`);
+            if (!lines.length) return '';
+            const cls = score != null ? chipClass(score) : '';
+            return `<div class="breakdown-section">
+              <div class="breakdown-header">
+                <span class="breakdown-label">${label}</span>
+                ${score != null ? `<span class="breakdown-score ${cls}">${score}</span>` : ''}
+              </div>
+              ${lines.join('')}
+            </div>`;
+          }
+
+          const breakdowns = [
+            analysisBlock('Hook', sc.hook, d.hookAnalysis),
+            analysisBlock('Body', sc.body, d.bodyAnalysis),
+            analysisBlock('CTA', sc.cta, d.ctaAnalysis),
+            analysisBlock('Audio', sc.audio, d.audioAnalysis),
+          ].filter(Boolean).join('');
+
           const geoBlock = d.geoFit ? `
             <div class="expand-geo-label">Geographic Fit</div>
             <div class="expand-geo">
@@ -454,12 +495,18 @@ async function syncUserWithBackend(email) {
               ${(d.geoFit.weak||[]).map(g=>`<span class="expand-geo-tag geo-w">✗ ${g}</span>`).join('')}
             </div>` : '';
 
+          const personaBlock = d.persona ? `
+            <div class="expand-geo-label" style="margin-top:16px">Target Persona</div>
+            <div class="breakdown-text" style="margin-top:6px">${typeof d.persona === 'string' ? d.persona : JSON.stringify(d.persona)}</div>` : '';
+
           hasExpand = true;
           expandHTML = `
             ${chips ? `<div class="expand-scores">${chips}</div>` : ''}
             ${scan.summary ? `<div class="expand-verdict">"${scan.summary}"</div>` : ''}
             ${d.topFix ? `<div class="expand-topfix"><div class="expand-topfix-label">⚡ #1 Fix</div>${d.topFix}</div>` : ''}
+            ${breakdowns ? `<div class="breakdowns-wrap">${breakdowns}</div>` : ''}
             ${geoBlock}
+            ${personaBlock}
             <div class="expand-actions">
               <button class="download-btn" onclick="downloadReport(event, '${scan.id}')">
                 ↓ Download Report
